@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -23,7 +24,7 @@ class UserController extends Controller
     public function registerUser(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255',
             'mobile' => 'required|numeric|min:11',
             'password' => 'required|string|min:8',
         ]);
@@ -44,9 +45,9 @@ class UserController extends Controller
         $result = $user->save();
 
         if ($result) {
-            return back()->with('success', 'Registered Successfully');
+            return response()->json(['success' => true]);
         } else {
-            return back()->with('fail', 'Something wrong');
+            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
         }
     }
 
@@ -86,7 +87,7 @@ class UserController extends Controller
     {
         $request->validate([
             'credential_for' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255',
             'mobile' => 'required|numeric|min:11',
             'url' => 'required|string|url',
             'ip_address' => 'required|ip',
@@ -94,28 +95,53 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        $user = new User();
-        $user->email = $request->email;
-        $user->mobile = $request->mobile;
-        $user->password = Hash::make($request->password);
-        $userResult = $user->save();
+        // Retrieve the id from the request
+        $id = $request->input('entryId');
 
-        $entry = new Entry();
-        $entry->credential_for = $request->credential_for;
-        $entry->email = $request->email;
-        $entry->mobile = $request->mobile;
-        $entry->url = $request->url;
-        $entry->ip_address = $request->ip_address;
-        $entry->username = $request->username;
-        $entry->password = Hash::make($request->password);
-        $entryResult = $entry->save();
+        // Check if id is empty to determine if it's an insert or update
+        if (empty($id)) {
+            // Insertion
+            $user = new User();
+            $user->email = $request->email;
+            $user->mobile = $request->mobile;
+            $user->password = Hash::make($request->password);
+            $userResult = $user->save();
+
+            $entry = new Entry();
+            $entry->credential_for = $request->credential_for;
+            $entry->email = $request->email;
+            $entry->mobile = $request->mobile;
+            $entry->url = $request->url;
+            $entry->ip_address = $request->ip_address;
+            $entry->username = $request->username;
+            $entry->password = Hash::make($request->password);
+            $entryResult = $entry->save();
+        } else {
+            // Update
+            $user = User::find($id);
+            $user->email = $request->email;
+            $user->mobile = $request->mobile;
+            $user->password = Hash::make($request->password);
+            $userResult = $user->save();
+
+            $entry = Entry::find($id);
+            $entry->credential_for = $request->credential_for;
+            $entry->email = $request->email;
+            $entry->mobile = $request->mobile;
+            $entry->url = $request->url;
+            $entry->ip_address = $request->ip_address;
+            $entry->username = $request->username;
+            $entry->password = Hash::make($request->password);
+            $entryResult = $entry->save();
+        }
 
         if ($userResult && $entryResult) {
-            return back()->with('success', 'Entry Successfully');
+            return response()->json(['success' => true]);
         } else {
-            return back()->with('fail', 'Something wrong');
+            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
         }
     }
+
 
     public function getEntries()
     {
@@ -138,7 +164,7 @@ class UserController extends Controller
     public function deleteEntry(Request $request)
     {
         $Id = $request->input('entryId');
- 
+
 
         // Validate that the entry and user exist
         $entry = Entry::find($Id);
@@ -168,5 +194,11 @@ class UserController extends Controller
 
             return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return response()->json(['success' => true]);
     }
 }
