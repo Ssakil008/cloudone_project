@@ -41,6 +41,11 @@ File: app-style
 @import url('https://fonts.googleapis.com/css?family=Mukta|Roboto');
 
 /* General */
+/* added by monir: table css */
+.table th, .table td {
+    text-align: center;
+}
+
 html {
   font-family: 'Mukta', sans-serif;
   font-family: 'Roboto', sans-serif;
@@ -5037,7 +5042,7 @@ table.grid td {
 [class*="icheck-material"] {
   min-height: 22px;
   margin-top: 6px;
-  margin-bottom: 6px 
+  margin-bottom: 6px;
   padding-left: 0px; }
   [class*="icheck-material"] > label {
     padding-left: 29px !important;

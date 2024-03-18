@@ -8,16 +8,24 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Entry;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
     public function registration()
     {
+        if (Auth::check()) {
+            return redirect()->intended(route('dashboard'));
+        }
         return view('auth.register');
     }
 
     public function login()
     {
+        if (Auth::check()) {
+            return redirect()->intended(route('dashboard'));
+        }
         return view('auth.login');
     }
 
@@ -54,38 +62,32 @@ class UserController extends Controller
     public function loginUser(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email|max:255|',
-            'password' => 'required|string|min:8',
+            'email' => 'required',
+            'password' => 'required',
         ]);
 
-        $user = User::where('email', '=', $request->email)->first();
+        $credential = $request->only('email', 'password');
 
-        if ($user) {
-            // Use Hash::check to compare passwords
-            if (Hash::check($request->password, $user->password)) {
-                $request->session()->put('loginId', $user->id);
-                return response()->json(['success' => true]);
-            } else {
-                return response()->json(['fail' => 'Password not matched']);
-            }
+        if (Auth::attempt($credential)) {
+            return response()->json(['success' => true]);
         } else {
             return response()->json(['fail' => 'The email is not recognized']);
         }
     }
 
-    public function firstPage()
+    public function dashboard()
     {
-        return view('firstPage');
+        return view('dashboard');
     }
 
-    public function pagesUserProfile()
+    public function userProfile()
     {
-        return view('pages-user-profile');
+        return view('user_profile');
     }
 
     public function newUser(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'credential_for' => 'required|string|max:255',
             'email' => 'required|string|email|max:255',
             'mobile' => 'required|numeric|min:11',
@@ -95,18 +97,14 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        // Retrieve the id from the request
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+
         $id = $request->input('entryId');
 
-        // Check if id is empty to determine if it's an insert or update
         if (empty($id)) {
-            // Insertion
-            $user = new User();
-            $user->email = $request->email;
-            $user->mobile = $request->mobile;
-            $user->password = Hash::make($request->password);
-            $userResult = $user->save();
-
             $entry = new Entry();
             $entry->credential_for = $request->credential_for;
             $entry->email = $request->email;
@@ -114,16 +112,9 @@ class UserController extends Controller
             $entry->url = $request->url;
             $entry->ip_address = $request->ip_address;
             $entry->username = $request->username;
-            $entry->password = Hash::make($request->password);
+            $entry->password = $request->password;
             $entryResult = $entry->save();
         } else {
-            // Update
-            $user = User::find($id);
-            $user->email = $request->email;
-            $user->mobile = $request->mobile;
-            $user->password = Hash::make($request->password);
-            $userResult = $user->save();
-
             $entry = Entry::find($id);
             $entry->credential_for = $request->credential_for;
             $entry->email = $request->email;
@@ -131,15 +122,11 @@ class UserController extends Controller
             $entry->url = $request->url;
             $entry->ip_address = $request->ip_address;
             $entry->username = $request->username;
-            $entry->password = Hash::make($request->password);
+            $entry->password = $request->password;
             $entryResult = $entry->save();
         }
 
-        if ($userResult && $entryResult) {
-            return response()->json(['success' => true]);
-        } else {
-            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
-        }
+        return response()->json(['success' => true]);
     }
 
 
@@ -168,9 +155,10 @@ class UserController extends Controller
 
         // Validate that the entry and user exist
         $entry = Entry::find($Id);
-        $user = User::find($Id);
+        // $user = User::find($Id);
 
-        if (!$entry || !$user) {
+        // if (!$entry || !$user) {
+        if (!$entry) {
             return response()->json(['success' => false, 'error' => 'Entry or user not found']);
         }
 
@@ -182,7 +170,7 @@ class UserController extends Controller
             $entry->delete();
 
             // Delete the corresponding user from the "users" table
-            $user->delete();
+            // $user->delete();
 
             // Commit the transaction
             DB::commit();
@@ -198,7 +186,7 @@ class UserController extends Controller
 
     public function logout()
     {
-        Auth::logout();
+        Session::flush();
         return response()->json(['success' => true]);
     }
 }

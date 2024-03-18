@@ -52,14 +52,33 @@
                     <div class="text-center">
                         <img src="assets/images/logo-icon.png" alt="logo icon">
                     </div>
+                    <div class="mt-5">
+                        @if($errors->any())
+                        <div class="col-12">
+                            @foreach($errors->all() as $error)
+                            <div class="alert alert-danger">
+                                {{$error}}
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+
+
+                        @if(session()->has('error'))
+                        <div class="alert alert-danger">
+                            {{session('error')}}
+                        </div>
+                        @endif
+
+
+                        @if(session()->has('success'))
+                        <div class="alert alert-success">
+                            {{session('success')}}
+                        </div>
+                        @endif
+                    </div>
                     <div class="card-title text-uppercase text-center py-3">Sign In</div>
                     <form form action="{{ route('login-user') }}" method="POST" class="login-form" id="login-form">
-                        @if(Session::has('success'))
-                        <div class="alert alert-success">{{Session::get('success')}}</div>
-                        @endif
-                        @if(Session::has('fail'))
-                        <div class="alert alert-danger">{{Session::get('fail')}}</div>
-                        @endif
                         @csrf
                         <div class="form-group">
                             <label for="email" class="sr-only">Email ID</label>
@@ -148,7 +167,7 @@
                     success: function(response) {
                         if (response.success) {
                             // Redirect to the desired page
-                            window.location.href = '{{ route("firstPage") }}';
+                            window.location.href = '{{ route("dashboard") }}';
                         } else {
                             // Display error message
                             alert(response.fail || 'Failed to log in');

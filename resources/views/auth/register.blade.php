@@ -46,14 +46,7 @@
                </div>
                <div class="card-title text-uppercase text-center py-3">Sign Up</div>
                <form class="register-form" id="register-form">
-                  @if(Session::has('success'))
-                  <div class="alert alert-success">{{Session::get('success')}}</div>
-                  @endif
-                  @if(Session::has('fail'))
-                  <div class="alert alert-danger">{{Session::get('fail')}}</div>
-                  @endif
                   @csrf
-
                   <div class="form-group">
                      <label for="email" class="sr-only">Email ID</label>
                      <div class="position-relative has-icon-right">
@@ -107,14 +100,48 @@
             <p class="text-dark mb-0">Already have an account? <a href="login"> Sign In here</a></p>
          </div>
       </div>
-
       <!--Start Back To Top Button-->
       <a href="javaScript:void();" class="back-to-top"><i class="fa fa-angle-double-up"></i> </a>
       <!--End Back To Top Button-->
-
-
-
    </div><!--wrapper-->
+
+   <!--Success  Modal -->
+   <div class="modal fade" id="successmodal">
+      <div class="modal-dialog">
+         <div class="modal-content border-success">
+            <div class="modal-header bg-success">
+               <h5 class="modal-title text-white">Successful</h5>
+               <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+               </button>
+            </div>
+            <div class="modal-body text-center" id="successmassage">
+            </div>
+            <div class="modal-footer">
+            </div>
+         </div>
+      </div>
+   </div>
+   <!--End Modal -->
+
+   <!--Danger Modal -->
+   <div class="modal fade" id="dangermodal">
+      <div class="modal-dialog">
+         <div class="modal-content border-danger">
+            <div class="modal-header bg-danger">
+               <h5 class="modal-title text-white">Error</h5>
+               <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+               </button>
+            </div>
+            <div class="modal-body text-center" id="dangermassage">
+            </div>
+            <div class="modal-footer">
+            </div>
+         </div>
+      </div>
+   </div>
+   <!--End Modal -->
 
    <!-- Bootstrap core JavaScript-->
    <script src="assets/js/jquery.min.js"></script>
@@ -137,18 +164,27 @@
                data: $('#register-form').serialize(),
                success: function(response) {
                   if (response.success) {
-                     // Handle success, e.g., show a success message
-                     alert(response.success);
-                     // Redirect to the login page using JavaScript
-                     window.location.href = '{{ route("login") }}';
+                     $('#successmassage').text('Registration Successful');
+                     $('#successmodal').modal('show');
+                     setTimeout(function() {
+                        $('#successmodal').modal('hide');
+                        window.location.href = '{{ route("login") }}';
+                     }, 4000);
                   } else {
-                     // Handle errors, e.g., show error messages
-                     alert(response.fail || 'Failed to register user');
+                     $('#dangermassage').text('Registration Failed');
+                     $('#dangermodal').modal('show');
+                     setTimeout(function() {
+                        $('#dangermodal').modal('hide');
+                     }, 4000);
                   }
                },
                error: function(error) {
                   console.log('Error:', error);
-                  alert('Failed to register user');
+                  $('#dangermassage').text('Registration Failed');
+                  $('#dangermodal').modal('show');
+                  setTimeout(function() {
+                     $('#dangermodal').modal('hide');
+                  }, 4000);
                }
             });
          });

@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- Mirrored from codervent.com/bulona/demo/pages-user-profile.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 26 Feb 2020 10:10:23 GMT -->
-
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -52,7 +50,7 @@
         <!--Start sidebar-wrapper-->
         <div id="sidebar-wrapper" data-simplebar="" data-simplebar-auto-hide="true">
             <div class="brand-logo">
-                <a href="index.html">
+                <a href="dashboard">
                     <img src="assets/images/logo-icon.png" class="logo-icon" alt="logo icon">
                     <h5 class="logo-text">Bulona Admin</h5>
                 </a>
@@ -62,7 +60,7 @@
                 <li class="sidebar-header">MAIN NAVIGATION</li>
                 <li>
                     <!-- <a href="javaScript:void();" class="waves-effect"> -->
-                    <a href="firstPage">
+                    <a href="dashboard">
                         <i class="zmdi zmdi-view-dashboard"></i> <span>Dashboard</span><i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <!-- <ul class="sidebar-submenu">
@@ -73,7 +71,7 @@
                 </li>
 
                 <li>
-                    <a href="pages-user-profile"><i class="zmdi zmdi-dot-circle-alt"></i> User Profile</a>
+                    <a href="user_profile"><i class="zmdi zmdi-dot-circle-alt"></i> User Profile</a>
                 </li>
             </ul>
         </div>
@@ -99,13 +97,13 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown" href="#">
-                            <span class="user-profile"><i class="icon-user mr-2"></i></span>
+                            <span class="user-profile"><i class="icon-user mr-2"></i>@auth {{auth()->user()->email}} @endauth</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li class="dropdown-item user-details">
                                 <a href="javaScript:void();">
                                     <div class="media">
-                                        <div class="avatar"><i class="icon-user mr-2"></i></div>
+                                        <div class="avatar"><i class="icon-user mr-2"></i>@auth {{auth()->user()->email}} @endauth</div>
                                         <!-- <div class="media-body">
                                     <h6 class="mt-2 user-title">Sarajhon Mccoy</h6>
                                     <p class="user-subtitle">mccoy@example.com</p>
@@ -114,11 +112,11 @@
                                 </a>
                             </li>
                             <li class="dropdown-divider"></li>
-                            <li class="dropdown-item"><a href="inbox.html"><i class="icon-envelope mr-2"></i> Inbox</a></li>
+                            <li class="dropdown-item"><a href="#"><i class="icon-envelope mr-2"></i> Inbox</a></li>
                             <li class="dropdown-divider"></li>
-                            <li class="dropdown-item"><a href="account.html"><i class="icon-wallet mr-2"></i> Account</a></li>
+                            <li class="dropdown-item"><a href="#"><i class="icon-wallet mr-2"></i> Account</a></li>
                             <li class="dropdown-divider"></li>
-                            <li class="dropdown-item"><a href="settings.html"><i class="icon-settings mr-2"></i> Setting</a></li>
+                            <li class="dropdown-item"><a href="#"><i class="icon-settings mr-2"></i> Setting</a></li>
                             <li class="dropdown-divider"></li>
                             <li class="dropdown-item" id="logout"><a href="logout"><i class="icon-power mr-2"></i> Logout</a></li>
                         </ul>
@@ -126,5 +124,43 @@
                 </ul>
             </nav>
         </header>
+
+        <!--Success  Modal -->
+        <div class="modal fade" id="successmodal">
+            <div class="modal-dialog">
+                <div class="modal-content border-success">
+                    <div class="modal-header bg-success">
+                        <h5 class="modal-title text-white">Successful</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center" id="successmassage">
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--End Modal -->
+
+        <!--Danger Modal -->
+        <div class="modal fade" id="dangermodal">
+            <div class="modal-dialog">
+                <div class="modal-content border-danger">
+                    <div class="modal-header bg-danger">
+                        <h5 class="modal-title text-white">Error</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center" id="dangermassage">
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--End Modal -->
 
         <!--End topbar header-->
