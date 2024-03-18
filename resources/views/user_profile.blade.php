@@ -105,9 +105,9 @@
 
 
                     <div class="form-group">
-                        <label for="ip" class="sr-only">IP Address</label>
+                        <label for="ip_address" class="sr-only">IP Address</label>
                         <div class="position-relative has-icon-right">
-                            <input type="text" id="ip_address" name="ip_address" placeholder="e.g., 192.168.1.1" value="{{old('ip_address')}}" class="form-control input-shadow">
+                            <input type="text" id="ip_address" name="ip_address" required placeholder="e.g., 192.168.1.1" value="{{old('ip_address')}}" class="form-control input-shadow">
                             <span class="text-danger" id="ip_address_error"></span>
                             <div class="form-control-position">
                                 <i class="zmdi zmdi-device-hub"></i>
@@ -127,9 +127,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="pass" class="sr-only">Password</label>
+                        <label for="password" class="sr-only">Password</label>
                         <div class="position-relative has-icon-right">
-                            <input type="password" name="password" id="password" placeholder="Password" class="form-control input-shadow" />
+                            <input type="password" name="password" required id="password" placeholder="Password" class="form-control input-shadow" />
                             <span class="text-danger" id="password_error"></span>
                             <div class="form-control-position">
                                 <i class="zmdi zmdi-lock"></i>
@@ -176,42 +176,66 @@
 
     $(document).ready(function() {
         $('#submitBtn').click(function() {
-            // Get form data
-            var formData = $('#myForm').serialize();
-            console.log(formData);
-            // Make AJAX call
-            alertify.confirm('Are you sure?', function(e) {
-                if (e) {
-                    $.ajax({
-                        type: 'POST',
-                        url: '{{ route("new-user") }}',
-                        data: formData,
-                        success: function(response) {
-                            if (response.success) {
+            var isValid = validateForm();
+            if (isValid) {
+                var formData = $('#myForm').serialize();
+                console.log(formData);
+                alertify.confirm('Are you sure?', function(e) {
+                    if (e) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '{{ route("new-user") }}',
+                            data: formData,
+                            success: function(response) {
+                                if (response.success) {
+                                    $('#myModal').modal('hide');
+                                    $('#successmassage').text('New User Added');
+                                    $('#successmodal').modal('show');
+                                    setTimeout(function() {
+                                        $('#successmodal').modal('hide');
+                                        window.location.href = '{{ route("user_profile") }}';
+                                    }, 4000);
+                                } else {
+                                    // Handle server-side errors
+                                    displayErrors(response.errors);
+                                }
+                            },
+                            error: function(error) {
+                                console.error('AJAX error:', error);
                                 $('#myModal').modal('hide');
-                                $('#successmassage').text('New User Added');
-                                $('#successmodal').modal('show');
+                                $('#dangermassage').text('User not added');
+                                $('#dangermodal').modal('show');
                                 setTimeout(function() {
-                                    $('#successmodal').modal('hide');
-                                    window.location.href = '{{ route("user_profile") }}';
+                                    $('#dangermodal').modal('hide');
                                 }, 4000);
-                            } else {
-                                // Display validation errors below input fields
-                                $.each(response.errors, function(key, value) {
-                                    console.log(key, value);
-                                    $('#' + key + '_error').text(value[0]);
-                                });
                             }
-                        },
-                        error: function(error) {
-                            console.error('AJAX error:', error);
-                        }
-                    });
+                        });
+                    }
+                });
+            }
+        });
+
+        // Function to validate the form
+        function validateForm() {
+            var isValid = true;
+            $('.error-message').text(''); // Clear previous error messages
+            $('#myForm input[required]').each(function() {
+                if ($(this).val().trim() === '') {
+                    var fieldName = $(this).attr('name');
+                    $('#' + fieldName + '_error').text(fieldName + ' is required');
+                    isValid = false;
                 }
             });
-        });
-    });
+            return isValid;
+        }
 
+        // Function to display errors below respective input fields
+        function displayErrors(errors) {
+            $.each(errors, function(key, value) {
+                $('#' + key + '_error').text(value);
+            });
+        }
+    });
 
     $(document).ready(function() {
         // Fetch entries data from the server

@@ -20,6 +20,9 @@
    <link href="assets/css/icons.css" rel="stylesheet" type="text/css" />
    <!-- Custom Style-->
    <link href="assets/css/app-style.css" rel="stylesheet" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/alertify.min.css" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/themes/default.min.css" />
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
 
 </head>
 
@@ -51,7 +54,7 @@
                      <label for="email" class="sr-only">Email ID</label>
                      <div class="position-relative has-icon-right">
                         <input type="email" name="email" name="email" required placeholder="E-mail" class="form-control input-shadow">
-                        <span class="text-danger">@error('email') {{$message}} @enderror</span>
+                        <span class="text-danger" id="email_error"></span>
                         <div class="form-control-position">
                            <i class="zmdi zmdi-email"></i>
                         </div>
@@ -59,11 +62,11 @@
                   </div>
 
                   <div class="form-group">
-                     <label for="username" class="sr-only">User Name</label>
+                     <label for="mobile" class="sr-only">Mobile Number</label>
                      <div class="position-relative has-icon-right">
-                        <input type="number" name="mobile" required id="mobile" placeholder="Phone Number" class="form-control input-shadow">
+                        <input type="number" name="mobile" required id="mobile" placeholder="Mobile Number" class="form-control input-shadow">
+                        <span class="text-danger" id="mobile_error"></span>
                         <div class="form-control-position">
-                           <span class="text-danger">@error('username') {{$message}} @enderror</span>
                            <i class="zmdi zmdi-account material-icons-name"></i>
                         </div>
                      </div>
@@ -72,8 +75,8 @@
                   <div class="form-group">
                      <label for="pass" class="sr-only">Password</label>
                      <div class="position-relative has-icon-right">
-                        <input type="password" name="password" id="password" placeholder="Password" class="form-control input-shadow" />
-                        <span class="text-danger">@error('password') {{$message}} @enderror</span>
+                        <input type="password" name="password" required id="password" placeholder="Password" class="form-control input-shadow" />
+                        <span class="text-danger" id="password_error"></span>
                         <div class="form-control-position">
                            <i class="zmdi zmdi-lock"></i>
                         </div>
@@ -158,37 +161,60 @@
    <script>
       $(document).ready(function() {
          $('#submit-btn').click(function() {
-            $.ajax({
-               type: 'POST',
-               url: '{{ route("register-user") }}',
-               data: $('#register-form').serialize(),
-               success: function(response) {
-                  if (response.success) {
-                     $('#successmassage').text('Registration Successful');
-                     $('#successmodal').modal('show');
-                     setTimeout(function() {
-                        $('#successmodal').modal('hide');
-                        window.location.href = '{{ route("login") }}';
-                     }, 4000);
-                  } else {
-                     $('#dangermassage').text('Registration Failed');
-                     $('#dangermodal').modal('show');
-                     setTimeout(function() {
-                        $('#dangermodal').modal('hide');
-                     }, 4000);
+            var isValid = validateForm();
+            if (isValid) {
+               var formData = $('#register-form').serialize();
+               console.log(formData);
+               alertify.confirm('Are you sure?', function(e) {
+                  if (e) {
+                     $.ajax({
+                        type: 'POST',
+                        url: '{{ route("register-user") }}',
+                        data: formData,
+                        success: function(response) {
+                           if (response.success) {
+                              $('#successmassage').text('Registration Successful');
+                              $('#successmodal').modal('show');
+                              setTimeout(function() {
+                                 $('#successmodal').modal('hide');
+                                 window.location.href = '{{ route("login") }}';
+                              }, 4000);
+                           } else {
+                              $('#dangermassage').text('Registration Failed');
+                              $('#dangermodal').modal('show');
+                              setTimeout(function() {
+                                 $('#dangermodal').modal('hide');
+                              }, 4000);
+                           }
+                        },
+                        error: function(error) {
+                           console.log('Error:', error);
+                           $('#dangermassage').text('Registration Failed');
+                           $('#dangermodal').modal('show');
+                           setTimeout(function() {
+                              $('#dangermodal').modal('hide');
+                           }, 4000);
+                        }
+                     });
                   }
-               },
-               error: function(error) {
-                  console.log('Error:', error);
-                  $('#dangermassage').text('Registration Failed');
-                  $('#dangermodal').modal('show');
-                  setTimeout(function() {
-                     $('#dangermodal').modal('hide');
-                  }, 4000);
-               }
-            });
+               });
+            }
          });
       });
+
+      // Function to validate the form
+      function validateForm() {
+         var isValid = true;
+         $('.error-message').text(''); // Clear previous error messages
+         $('#register-form input[required]').each(function() {
+            if ($(this).val().trim() === '') {
+               var fieldName = $(this).attr('name');
+               $('#' + fieldName + '_error').text(fieldName + ' is required');
+               isValid = false;
+            }
+         });
+         return isValid;
+      }
    </script>
 
 </body>

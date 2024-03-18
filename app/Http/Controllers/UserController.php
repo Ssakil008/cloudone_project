@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
+
 class UserController extends Controller
 {
     public function registration()
@@ -98,13 +99,21 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
         }
 
-
+        // Retrieve the id from the request
         $id = $request->input('entryId');
 
+        // Check if id is empty to determine if it's an insert or update
         if (empty($id)) {
+            // // Insertion
+            // $user = new User();
+            // $user->email = $request->email;
+            // $user->mobile = $request->mobile;
+            // $user->password = Hash::make($request->password);
+            // $userResult = $user->save();
+
             $entry = new Entry();
             $entry->credential_for = $request->credential_for;
             $entry->email = $request->email;
@@ -115,6 +124,13 @@ class UserController extends Controller
             $entry->password = $request->password;
             $entryResult = $entry->save();
         } else {
+            // // Update
+            // $user = User::find($id);
+            // $user->email = $request->email;
+            // $user->mobile = $request->mobile;
+            // $user->password = Hash::make($request->password);
+            // $userResult = $user->save();
+
             $entry = Entry::find($id);
             $entry->credential_for = $request->credential_for;
             $entry->email = $request->email;
@@ -126,7 +142,12 @@ class UserController extends Controller
             $entryResult = $entry->save();
         }
 
-        return response()->json(['success' => true]);
+        // if ($userResult && $entryResult) {
+        if ($entryResult) {
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
+        }
     }
 
 

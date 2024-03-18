@@ -8,28 +8,28 @@
         </footer>
         <!--End footer-->
         <script>
-        $(document).ready(function() {
-            // Add a click event listener to the logout link
-            $('#logout').click(function() {
-                // Make an AJAX request to the logout endpoint
-                $.ajax({
-                    type: 'POST',
-                    url: '{{ route("logout") }}', // Replace with your actual logout route
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    }, // Include CSRF token
-                    success: function(response) {
-                        // Redirect to the login page
-                        window.location.href = '{{ route("login") }}';
-                    },
-                    error: function(error) {
-                        console.error('Error logging out:', error);
-                        // Redirect to the login page even if there's an error
-                        window.location.href = '{{ route("login") }}';
-                    }
+            $(document).ready(function() {
+                // Add a click event listener to the logout link
+                $('#logout').click(function() {
+                    // Make an AJAX request to the logout endpoint
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ route("logout") }}', // Replace with your actual logout route
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        }, // Include CSRF token
+                        success: function(response) {
+                            // Redirect to the login page
+                            window.location.href = '{{ route("login") }}';
+                        },
+                        error: function(error) {
+                            console.error('Error logging out:', error);
+                            // Redirect to the login page even if there's an error
+                            window.location.href = '{{ route("login") }}';
+                        }
+                    });
                 });
             });
-        });
         </script>
         </body>
 
