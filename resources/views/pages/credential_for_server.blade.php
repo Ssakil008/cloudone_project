@@ -48,7 +48,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Add New User</h5>
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -60,81 +60,46 @@
                     @csrf
                     <input type="hidden" name="entryId" id="entryId">
                     <div class="form-group">
-                        <label for="credential_for" class="sr-only">Name</label>
-                        <div class="position-relative has-icon-right">
-                            <input type="text" id="credential_for" name="credential_for" required placeholder="Name" value="{{old('name')}}" class="form-control input-shadow">
-                            <span class="text-danger" id="credential_for_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-account material-icons-name"></i>
-                            </div>
-                        </div>
+                        <label for="credential_for">Name</label>
+                        <input type="text" id="credential_for" name="credential_for" required placeholder="Name" value="{{ old('name') }}" class="form-control input-shadow">
+                        <span class="text-danger" id="credential_for_error"></span>
                     </div>
 
                     <div class="form-group">
-                        <label for="email" class="sr-only">Email ID</label>
-                        <div class="position-relative has-icon-right">
-                            <input type="email" id="email" name="email" name="email" required placeholder="E-mail" value="{{old('email')}}" class="form-control input-shadow">
-                            <span class="text-danger" id="email_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-email"></i>
-                            </div>
-                        </div>
+                        <label for="email">Email ID</label>
+                        <input type="email" id="email" name="email" name="email" required placeholder="E-mail" value="{{old('email')}}" class="form-control input-shadow">
+                        <span class="text-danger" id="email_error"></span>
                     </div>
 
                     <div class="form-group">
-                        <label for="mobile" class="sr-only">Mobile Number</label>
-                        <div class="position-relative has-icon-right">
-                            <input type="number" name="mobile" required id="mobile" placeholder="Mobile Number" class="form-control input-shadow">
-                            <span class="text-danger" id="mobile_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-smartphone material-icons-name"></i>
-                            </div>
-                        </div>
+                        <label for="mobile">Mobile Number</label>
+                        <input type="number" name="mobile" required id="mobile" placeholder="Mobile Number" class="form-control input-shadow">
+                        <span class="text-danger" id="mobile_error"></span>
                     </div>
 
                     <div class="form-group">
-                        <label for="url" class="sr-only">Website Name</label>
-                        <div class="position-relative has-icon-right">
-                            <input type="url" name="url" required id="url" placeholder="Website Name" value="{{old('url')}}" class="form-control input-shadow">
-                            <span class="text-danger" id="url_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-laptop"></i>
-                            </div>
-                        </div>
+                        <label for="url">Website Name</label>
+                        <input type="url" name="url" required id="url" placeholder="Website Name" value="{{old('url')}}" class="form-control input-shadow">
+                        <span class="text-danger" id="url_error"></span>
                     </div>
 
 
                     <div class="form-group">
-                        <label for="ip_address" class="sr-only">IP Address</label>
-                        <div class="position-relative has-icon-right">
-                            <input type="text" id="ip_address" name="ip_address" required placeholder="e.g., 192.168.1.1" value="{{old('ip_address')}}" class="form-control input-shadow">
-                            <span class="text-danger" id="ip_address_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-device-hub"></i>
-                            </div>
-                        </div>
+                        <label for="ip_address">IP Address</label>
+                        <input type="text" id="ip_address" name="ip_address" required placeholder="e.g., 192.168.1.1" value="{{old('ip_address')}}" class="form-control input-shadow">
+                        <span class="text-danger" id="ip_address_error"></span>
                     </div>
 
                     <div class="form-group">
-                        <label for="username" class="sr-only">User Name</label>
-                        <div class="position-relative has-icon-right">
-                            <input type="text" name="username" required id="username" placeholder="User Name" value="{{old('username')}}" class="form-control input-shadow">
-                            <span class="text-danger" id="username_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-account material-icons-name"></i>
-                            </div>
-                        </div>
+                        <label for="username">User Name</label>
+                        <input type="text" name="username" required id="username" placeholder="User Name" value="{{old('username')}}" class="form-control input-shadow">
+                        <span class="text-danger" id="username_error"></span>
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="sr-only">Password</label>
-                        <div class="position-relative has-icon-right">
-                            <input type="password" name="password" required id="password" placeholder="Password" class="form-control input-shadow" />
-                            <span class="text-danger" id="password_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-lock"></i>
-                            </div>
-                        </div>
+                        <label for="password">Password</label>
+                        <input type="text" name="password" required id="password" placeholder="Password" class="form-control input-shadow" />
+                        <span class="text-danger" id="password_error"></span>
                     </div>
 
                     <!-- Add other form fields as needed -->
@@ -142,13 +107,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="submitBtn">Submit</button>
+                <button type="button" class="btn btn-primary" id="submitBtn"></button>
             </div>
         </div>
     </div>
 </div>
-
-
 
 <!-- Bootstrap core JavaScript-->
 <script src="assets/js/jquery.min.js"></script>
@@ -159,16 +122,17 @@
 <script src="assets/plugins/simplebar/js/simplebar.js"></script>
 <!-- sidebar-menu js -->
 <script src="assets/js/sidebar-menu.js"></script>
-
 <!-- Custom scripts -->
 <script src="assets/js/app-script.js"></script>
-<script src="https://cdn.datatables.net/v/dt/dt-1.11.6/datatables.min.js"></script>
 
 <script>
     $(document).ready(function() {
         // Clear form fields when the "Add New" button is clicked
         $('#addNewBtn').click(function() {
-            $('#myModal')[0].reset();
+            $('#myForm')[0].reset();
+            $('#submitBtn').text('Submit');
+            $('.modal-title').html('<strong>Add New User</strong>');
+            $('#myModal .text-danger').text('');
         });
 
         // Your other code...
@@ -189,12 +153,12 @@
                             success: function(response) {
                                 if (response.success) {
                                     $('#myModal').modal('hide');
-                                    $('#successmassage').text('New User Added');
+                                    $('#successmessage').text('New User Added');
                                     $('#successmodal').modal('show');
                                     setTimeout(function() {
                                         $('#successmodal').modal('hide');
                                         window.location.href = '{{ route("user_profile") }}';
-                                    }, 4000);
+                                    }, 2000);
                                 } else {
                                     // Handle server-side errors
                                     displayErrors(response.errors);
@@ -203,11 +167,11 @@
                             error: function(error) {
                                 console.error('AJAX error:', error);
                                 $('#myModal').modal('hide');
-                                $('#dangermassage').text('User not added');
-                                $('#dangermodal').modal('show');
+                                $('#errormessage').text('User not added');
+                                $('#errormodal').modal('show');
                                 setTimeout(function() {
-                                    $('#dangermodal').modal('hide');
-                                }, 4000);
+                                    $('#errormodal').modal('hide');
+                                }, 2000);
                             }
                         });
                     }
@@ -291,6 +255,7 @@
                         var entry = response.data;
 
                         // Populate the modal with the entry data
+                        $('#myModal .text-danger').text('');
                         $('#myModal').modal('show');
                         $('#entryId').val(entry.id);
                         $('#credential_for').val(entry.credential_for);
@@ -300,8 +265,8 @@
                         $('#ip_address').val(entry.ip_address);
                         $('#username').val(entry.username);
                         $('#password').val(entry.password);
-                        $('#submitBtn').text('Edit');
-                        $('.modal-title').text('Edit The User');
+                        $('#submitBtn').text('Update');
+                        $('.modal-title').html('<strong>Edit The User</strong>');
                     } else {
                         console.error('Invalid response structure:', response);
                     }
@@ -331,18 +296,18 @@
                         },
                         success: function(response) {
                             if (response.success) {
-                                $('#successmassage').text('Entry deleted successfully.');
+                                $('#successmessage').text('Entry deleted successfully.');
                                 $('#successmodal').modal('show');
                                 setTimeout(function() {
                                     $('#successmodal').modal('hide');
                                     window.location.href = '{{ route("user_profile") }}';
-                                }, 4000);
+                                }, 2000);
                             } else {
-                                $('#dangermassage').text('User deletion failed');
-                                $('#dangermodal').modal('show');
+                                $('#errormessage').text('User deletion failed');
+                                $('#errormodal').modal('show');
                                 setTimeout(function() {
-                                    $('#dangermodal').modal('hide');
-                                }, 4000);
+                                    $('#errormodal').modal('hide');
+                                }, 2000);
                             }
                         },
                         error: function(error) {

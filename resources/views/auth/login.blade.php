@@ -52,33 +52,8 @@
                     <div class="text-center">
                         <img src="assets/images/logo-icon.png" alt="logo icon">
                     </div>
-                    <div class="mt-5">
-                        @if($errors->any())
-                        <div class="col-12">
-                            @foreach($errors->all() as $error)
-                            <div class="alert alert-danger">
-                                {{$error}}
-                            </div>
-                            @endforeach
-                        </div>
-                        @endif
-
-
-                        @if(session()->has('error'))
-                        <div class="alert alert-danger">
-                            {{session('error')}}
-                        </div>
-                        @endif
-
-
-                        @if(session()->has('success'))
-                        <div class="alert alert-success">
-                            {{session('success')}}
-                        </div>
-                        @endif
-                    </div>
                     <div class="card-title text-uppercase text-center py-3">Sign In</div>
-                    <form form action="{{ route('login-user') }}" method="POST" class="login-form" id="login-form">
+                    <form class="login-form" id="login-form">
                         @csrf
                         <div class="form-group">
                             <label for="email" class="sr-only">Email ID</label>
@@ -141,6 +116,25 @@
 
     </div><!--wrapper-->
 
+    <!--Error Modal -->
+    <div class="modal fade" id="errormodal">
+        <div class="modal-dialog">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">Error</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center" id="errormessage">
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End Modal -->
+
     <!-- Bootstrap core JavaScript-->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/popper.min.js"></script>
@@ -169,13 +163,20 @@
                             // Redirect to the desired page
                             window.location.href = '{{ route("dashboard") }}';
                         } else {
-                            // Display error message
-                            alert(response.fail || 'Failed to log in');
+                            $('#errormessage').text('Incorrect email or password');
+                            $('#errormodal').modal('show');
+                            setTimeout(function() {
+                                $('#errormodal').modal('hide');
+                            }, 2000);
                         }
                     },
                     error: function(error) {
                         console.log('Error:', error);
-                        alert('Failed to log in');
+                        $('#errormessage').text('Incorrect email or password');
+                        $('#errormodal').modal('show');
+                        setTimeout(function() {
+                            $('#errormodal').modal('hide');
+                        }, 2000);
                     }
                 });
             });

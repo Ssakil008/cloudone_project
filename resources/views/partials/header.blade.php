@@ -71,7 +71,13 @@
                 </li>
 
                 <li>
-                    <a href="user_profile"><i class="zmdi zmdi-dot-circle-alt"></i> User Profile</a>
+                    <a href="user_profile"><i class="zmdi zmdi-dot-circle-alt"></i> Credential For Server</a>
+                </li>
+                <li>
+                    <a href="user_setup"><i class="zmdi zmdi-dot-circle-alt"></i> User Setup</a>
+                </li>
+                <li>
+                    <a href="role"><i class="zmdi zmdi-dot-circle-alt"></i> Role</a>
                 </li>
             </ul>
         </div>
@@ -135,7 +141,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body text-center" id="successmassage">
+                    <div class="modal-body text-center" id="successmessage">
                     </div>
                     <div class="modal-footer">
                     </div>
@@ -144,8 +150,8 @@
         </div>
         <!--End Modal -->
 
-        <!--Danger Modal -->
-        <div class="modal fade" id="dangermodal">
+        <!--Error Modal -->
+        <div class="modal fade" id="errormodal">
             <div class="modal-dialog">
                 <div class="modal-content border-danger">
                     <div class="modal-header bg-danger">
@@ -154,7 +160,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body text-center" id="dangermassage">
+                    <div class="modal-body text-center" id="errormessage">
                     </div>
                     <div class="modal-footer">
                     </div>
@@ -162,5 +168,28 @@
             </div>
         </div>
         <!--End Modal -->
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" id="confirmBtn" class="btn btn-danger"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--End Modal -->
+
 
         <!--End topbar header-->

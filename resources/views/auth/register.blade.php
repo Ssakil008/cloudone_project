@@ -9,6 +9,8 @@
    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
    <meta name="description" content="" />
    <meta name="author" content="" />
+   <meta name="csrf-token" content="{{ csrf_token() }}">
+
    <title>Bulona - Bootstrap Admin Dashboard Template</title>
    <!--favicon-->
    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
@@ -53,7 +55,7 @@
                   <div class="form-group">
                      <label for="email" class="sr-only">Email ID</label>
                      <div class="position-relative has-icon-right">
-                        <input type="email" name="email" name="email" required placeholder="E-mail" class="form-control input-shadow">
+                        <input type="email" name="email" id="email" required placeholder="E-mail" class="form-control input-shadow">
                         <span class="text-danger" id="email_error"></span>
                         <div class="form-control-position">
                            <i class="zmdi zmdi-email"></i>
@@ -73,7 +75,7 @@
                   </div>
 
                   <div class="form-group">
-                     <label for="pass" class="sr-only">Password</label>
+                     <label for="password" class="sr-only">Password</label>
                      <div class="position-relative has-icon-right">
                         <input type="password" name="password" required id="password" placeholder="Password" class="form-control input-shadow" />
                         <span class="text-danger" id="password_error"></span>
@@ -118,7 +120,7 @@
                   <span aria-hidden="true">&times;</span>
                </button>
             </div>
-            <div class="modal-body text-center" id="successmassage">
+            <div class="modal-body text-center" id="successmessage">
             </div>
             <div class="modal-footer">
             </div>
@@ -127,8 +129,8 @@
    </div>
    <!--End Modal -->
 
-   <!--Danger Modal -->
-   <div class="modal fade" id="dangermodal">
+   <!--Error Modal -->
+   <div class="modal fade" id="errormodal">
       <div class="modal-dialog">
          <div class="modal-content border-danger">
             <div class="modal-header bg-danger">
@@ -137,7 +139,7 @@
                   <span aria-hidden="true">&times;</span>
                </button>
             </div>
-            <div class="modal-body text-center" id="dangermassage">
+            <div class="modal-body text-center" id="errormessage">
             </div>
             <div class="modal-footer">
             </div>
@@ -160,6 +162,13 @@
    <!-- Add this script at the end of your HTML file, before </body> -->
    <script>
       $(document).ready(function() {
+         // Set up jQuery to include the CSRF token in all AJAX requests
+         $.ajaxSetup({
+            headers: {
+               'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+         });
+
          $('#submit-btn').click(function() {
             var isValid = validateForm();
             if (isValid) {
@@ -173,27 +182,27 @@
                         data: formData,
                         success: function(response) {
                            if (response.success) {
-                              $('#successmassage').text('Registration Successful');
+                              $('#successmessage').text('Registration Successful');
                               $('#successmodal').modal('show');
                               setTimeout(function() {
                                  $('#successmodal').modal('hide');
-                                 window.location.href = '{{ route("login") }}';
-                              }, 4000);
+                              }, 1000);
+                              autoLoginAndRedirect($('#email').val(), $('#password').val());
                            } else {
-                              $('#dangermassage').text('Registration Failed');
-                              $('#dangermodal').modal('show');
+                              $('#errormessage').text('Registration Failed');
+                              $('#errormodal').modal('show');
                               setTimeout(function() {
-                                 $('#dangermodal').modal('hide');
-                              }, 4000);
+                                 $('#errormodal').modal('hide');
+                              }, 2000);
                            }
                         },
                         error: function(error) {
                            console.log('Error:', error);
-                           $('#dangermassage').text('Registration Failed');
-                           $('#dangermodal').modal('show');
+                           $('#errormessage').text('Registration Failed');
+                           $('#errormodal').modal('show');
                            setTimeout(function() {
-                              $('#dangermodal').modal('hide');
-                           }, 4000);
+                              $('#errormodal').modal('hide');
+                           }, 2000);
                         }
                      });
                   }
@@ -214,6 +223,41 @@
             }
          });
          return isValid;
+      }
+
+      // Function to perform auto-login and redirect
+      function autoLoginAndRedirect(email, password) {
+         var loginData = {
+            email: email,
+            password: password
+         };
+
+         console.log(loginData);
+
+         $.ajax({
+            type: 'POST',
+            url: '{{ route("login-user") }}',
+            data: loginData,
+            success: function(response) {
+               if (response.success) {
+                  window.location.href = '{{ route("dashboard") }}';
+               } else {
+                  $('#errormessage').text('Auto login failed');
+                  $('#errormodal').modal('show');
+                  setTimeout(function() {
+                     $('#errormodal').modal('hide');
+                  }, 2000);
+               }
+            },
+            error: function(error) {
+               console.log('Error:', error);
+               $('#errormessage').text('Auto login failed');
+               $('#errormodal').modal('show');
+               setTimeout(function() {
+                  $('#errormodal').modal('hide');
+               }, 2000);
+            }
+         });
       }
    </script>
 
