@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+
 use App\Models\User;
 use App\Models\CredentialForServer;
+use App\Models\Role;
+use App\Models\RolePermission;
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -32,46 +36,61 @@ class UserController extends Controller
 
     public function registerUser(Request $request)
     {
-        $rules = [
+        $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255',
             'mobile' => 'required|string|min:11',
-        ];
+            'password' => 'required|string|min:8',
+        ]);
 
-        // Include password validation only for new users (not for updates)
-        if (!$request->has('id')) {
-            $rules['password'] = 'required|string|min:8';
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
         }
 
-        $request->validate($rules);
+        // Retrieve the id from the request
+        $id = $request->input('userId');
 
-        $userData = [
-            'email' => $request->email,
-            'mobile' => $request->mobile,
-        ];
-
-        // Check if ID is provided
-        if ($request->has('id')) {
-            // Update user if ID exists
-            $user = User::find($request->id);
-            if ($user) {
-                $user->update($userData);
-                return response()->json(['success' => true]);
-            } else {
-                return response()->json(['success' => false, 'fail' => 'User not found'], 404);
-            }
-        } else {
-            // Insert new user if no ID provided
+        // Check if id is empty to determine if it's an insert or update
+        if (empty($id)) {
+            //insertion
             $user = new User();
             $user->email = $request->email;
             $user->mobile = $request->mobile;
             $user->password = Hash::make($request->password);
-            $result = $user->save();
+            $userResult = $user->save();
 
-            if ($result) {
-                return response()->json(['success' => true]);
-            } else {
-                return response()->json(['success' => false, 'fail' => 'Something went wrong']);
-            }
+            // $entry = new CredentialForServer();
+            // $entry->credential_for = $request->credential_for;
+            // $entry->email = $request->email;
+            // $entry->mobile = $request->mobile;
+            // $entry->url = $request->url;
+            // $entry->ip_address = $request->ip_address;
+            // $entry->username = $request->username;
+            // $entry->password = $request->password;
+            // $entryResult = $entry->save();
+        } else {
+            // Update
+            $user = User::find($id);
+            $user->email = $request->email;
+            $user->mobile = $request->mobile;
+            $user->password = Hash::make($request->password);
+            $userResult = $user->save();
+
+            // $entry = CredentialForServer::find($id);
+            // $entry->credential_for = $request->credential_for;
+            // $entry->email = $request->email;
+            // $entry->mobile = $request->mobile;
+            // $entry->url = $request->url;
+            // $entry->ip_address = $request->ip_address;
+            // $entry->username = $request->username;
+            // $entry->password = $request->password;
+            // $entryResult = $entry->save();
+        }
+
+        // if ($userResult && $entryResult) {
+        if ($userResult) {
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
         }
     }
 
@@ -101,7 +120,7 @@ class UserController extends Controller
         return view('pages.credential_for_server');
     }
 
-    public function newUser(Request $request)
+    public function insertCredential(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'credential_for' => 'required|string|max:255',
@@ -166,6 +185,78 @@ class UserController extends Controller
     }
 
 
+    public function addRole(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
+        }
+
+        $id = $request->input('roleId');
+
+        if (empty($id)) {
+            //insertion
+            $role = new Role();
+            $role->role = $request->role;
+            $role->description = $request->description;
+            $roleResult = $role->save();
+        } else {
+            // Update
+            $role = Role::find($id);
+            $role->role = $request->role;
+            $role->description = $request->description;
+            $roleResult = $role->save();
+        }
+
+        if ($roleResult) {
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
+        }
+    }
+
+    public function insertPermission(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'role_id' => 'required|integer', // Ensure role_id is present and is an integer
+            'permission' => 'required|string',
+            'read' => 'nullable|string',
+            'create' => 'nullable|string',
+            'edit' => 'nullable|string',
+            'delete' => 'nullable|string',
+        ]);
+
+        try {
+            // Create a new RolePermission instance and fill it with the validated data
+            $rolePermission = new RolePermission();
+            $rolePermission->role_id = $validatedData['role_id'];
+            $rolePermission->module = $validatedData['permission'];
+            $rolePermission->read = $validatedData['read'] ?? 'no';
+            $rolePermission->create = $validatedData['create'] ?? 'no';
+            $rolePermission->edit = $validatedData['edit'] ?? 'no';
+            $rolePermission->delete = $validatedData['delete'] ?? 'no';
+
+            // Save the role permission to the database
+            $rolePermissionResult = $rolePermission->save();
+
+            if ($rolePermissionResult) {
+                return response()->json(['success' => true]);
+            } else {
+                return response()->json(['success' => false, 'fail' => 'Something went wrong']);
+            }
+        } catch (\Exception $e) {
+            // Return an error response if an exception occurs
+            return response()->json(['success' => false, 'fail' => 'Failed to add permission: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+
     public function getEntries()
     {
         $entries = CredentialForServer::all();
@@ -179,6 +270,14 @@ class UserController extends Controller
 
         return response()->json(['data' => $users]);
     }
+
+    public function getAllRoleData()
+    {
+        $roles = Role::all();
+
+        return response()->json(['data' => $roles]);
+    }
+
 
     public function getEntry($id)
     {
@@ -202,7 +301,29 @@ class UserController extends Controller
         }
     }
 
-    public function deleteEntry(Request $request)
+    public function getRoleData($id)
+    {
+        $role = Role::find($id);
+
+        if ($role) {
+            return response()->json(['data' => $role]);
+        } else {
+            return response()->json(['error' => 'Entry not found'], 404);
+        }
+    }
+
+    public function getAllPermission($id)
+    {
+        $role = Role::find($id);
+
+        if ($role) {
+            return response()->json(['data' => $role]);
+        } else {
+            return response()->json(['error' => 'Entry not found'], 404);
+        }
+    }
+
+    public function deleteCredential(Request $request)
     {
         $Id = $request->input('entryId');
 
@@ -253,6 +374,21 @@ class UserController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function deleteRoleData(Request $request)
+    {
+        $Id = $request->input('roleId');
+
+        $roleId = Role::find($Id);
+
+        if (!$roleId) {
+            return response()->json(['success' => false, 'error' => 'User not found']);
+        }
+
+        $roleId->delete();
+
+        return response()->json(['success' => true]);
+    }
+
     public function logout()
     {
         Session::flush();
@@ -262,5 +398,10 @@ class UserController extends Controller
     public function userSetup()
     {
         return view('pages.user_setup');
+    }
+
+    public function role()
+    {
+        return view('pages.role');
     }
 }

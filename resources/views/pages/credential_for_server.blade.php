@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@section('title','Credential For Server')
 @section('content')
 
 <div class="content-wrapper">
@@ -7,7 +7,7 @@
         <!-- Breadcrumb-->
         <div class="row pt-2 pb-2">
             <div class="col-sm-9">
-                <h4 class="page-title">User Profile</h4>
+                <h4 class="page-title">Credential Details</h4>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
                 <!-- Button to Open Modal -->
@@ -20,7 +20,7 @@
                 <thead>
                     <tr>
                         <th>Serial No</th>
-                        <th>Credential For</th>
+                        <th>Name</th>
                         <th>Email</th>
                         <th>Mobile</th>
                         <th>URL</th>
@@ -148,7 +148,7 @@
                     if (e) {
                         $.ajax({
                             type: 'POST',
-                            url: '{{ route("new-user") }}',
+                            url: '{{ route("insertCredential") }}',
                             data: formData,
                             success: function(response) {
                                 if (response.success) {
@@ -223,7 +223,7 @@
                             '<td>' + entry.ip_address + '</td>' +
                             '<td>' + entry.username + '</td>' +
                             '<td>' +
-                            '<i class="icon-note mr-2 edit-btn align-middle" data-entry-id="' + entry.id + '"></i>' +
+                            '<i class="icon-note mr-2 edit-btn align-middle text-info" data-entry-id="' + entry.id + '"></i>' +
                             '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-entry-id="' + entry.id + '"></i>' +
                             '</td>' +
                             '</tr>';
@@ -290,7 +290,7 @@
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                         },
                         type: 'POST',
-                        url: '{{ route("delete-entry") }}',
+                        url: '{{ route("deleteCredential") }}',
                         data: {
                             entryId: entryId,
                         },

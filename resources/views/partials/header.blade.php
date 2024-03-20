@@ -9,7 +9,7 @@
     <meta name="author" content="" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Bulona - Bootstrap Admin Dashboard Template</title>
+    <title>@yield('title','Bulona - Bootstrap Admin Dashboard Template')</title>
     <!--favicon-->
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
     <!-- simplebar CSS-->

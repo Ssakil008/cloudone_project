@@ -1,12 +1,12 @@
 @extends('layouts.app')
-
+@section('title','User Setup')
 @section('content')
 
 <div class="content-wrapper">
     <div class="container-fluid">
         <div class="row pt-2 pb-2 align-items-center">
             <div class="col-sm-9">
-                <h4 class="page-title">User Profile</h4>
+                <h4 class="page-title">User Details</h4>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
                 <button type="button" id="addNewUser" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Add New User</button>
@@ -25,7 +25,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Populate table rows dynamically using PHP or JavaScript -->
+ 
                 </tbody>
             </table>
         </div>
@@ -178,7 +178,7 @@
                             '<td>' + user.email + '</td>' +
                             '<td>' + user.mobile + '</td>' +
                             '<td>' +
-                            '<i class="icon-note mr-2 edit-btn align-middle" data-user-id="' + user.id + '"></i>' +
+                            '<i class="icon-note mr-2 edit-btn align-middle text-info" data-user-id="' + user.id + '"></i>' +
                             '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-user-id="' + user.id + '"></i>' +
                             '</td>' +
                             '</tr>';
