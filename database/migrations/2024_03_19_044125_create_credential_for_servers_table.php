@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('credential_for_servers', function (Blueprint $table) {
             $table->id();
             $table->string('credential_for');
-            $table->string('email');
-            $table->string('mobile');
+            $table->string('email')->unique();
+            $table->string('mobile')->unique();
             $table->string('url');
             $table->ipAddress('ip_address');
             $table->string('username');

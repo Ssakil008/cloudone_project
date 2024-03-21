@@ -282,7 +282,6 @@
             var userId = $(this).data('user-id');
             console.log(entryId, userId);
 
-            // Confirm deletion
             alertify.confirm('Are you sure?', function(e) {
                 if (e) {
                     $.ajax({

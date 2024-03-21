@@ -27,16 +27,19 @@ Route::post('/insertCredential', [UserController::class, 'insertCredential'])->n
 Route::post('/addRole', [UserController::class, 'addRole'])->name('addRole');
 Route::post('/insertPermission', [UserController::class, 'insertPermission'])->name('insertPermission');
 Route::get('/get-entries', [UserController::class, 'getEntries'])->name('get-entries');
-Route::get('/getAllUserData', [UserController::class, 'getAllUserData'])->name('getAllUserData');
 Route::get('/getAllRoleData', [UserController::class, 'getAllRoleData'])->name('getAllRoleData');
+Route::get('/getAllUserData', [UserController::class, 'getAllUserData'])->name('getAllUserData');
 Route::get('/get-entry/{id}', [UserController::class, 'getEntry'])->name('get-entry');
 Route::get('/getUserData/{id}', [UserController::class, 'getUserData'])->name('getUserData');
 Route::get('/getRoleData/{id}', [UserController::class, 'getRoleData'])->name('getRoleData');
+Route::get('/getPermissionData/{id}', [UserController::class, 'getPermissionData'])->name('getPermissionData');
 Route::get('/getAllPermission/{id}', [UserController::class, 'getAllPermission'])->name('getAllPermission');
 Route::post('/deleteCredential', [UserController::class, 'deleteCredential'])->name('deleteCredential');
 Route::post('/deleteUserData', [UserController::class, 'deleteUserData'])->name('deleteUserData');
 Route::post('/deleteRoleData', [UserController::class, 'deleteRoleData'])->name('deleteRoleData');
+Route::post('/deletePermissionData', [UserController::class, 'deletePermissionData'])->name('deletePermissionData');
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
     Route::get('/user_profile', [UserController::class, 'userProfile'])->name('user_profile');

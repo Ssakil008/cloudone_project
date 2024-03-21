@@ -25,7 +25,7 @@
                     </tr>
                 </thead>
                 <tbody>
- 
+
                 </tbody>
             </table>
         </div>
@@ -228,55 +228,48 @@
             var userId = $(this).data('user-id');
             console.log(userId);
 
-            // Show confirmation modal
-            $('#confirmBtn').text('Delete')
-            $('#deleteConfirmationModal').modal('show');
-
-            // Handle confirmation
-            $('#confirmBtn').click(function() {
-                $.ajax({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    type: 'POST',
-                    url: '{{ route("deleteUserData") }}',
-                    data: {
-                        userId: userId,
-                    },
-                    success: function(response) {
-                        console.log(response);
-                        $('#deleteConfirmationModal').modal('hide');
-                        if (response.success) {
-                            // Display success message
-                            $('#successmessage').text('User deleted successfully.');
-                            $('#successmodal').modal('show');
-                            setTimeout(function() {
-                                $('#successmodal').modal('hide');
-                                // Redirect to user setup page
-                                window.location.replace('{{ route("user_setup") }}');
-                            }, 2000);
-                        } else {
+            alertify.confirm('Are you sure?', function(e) {
+                if (e) {
+                    $.ajax({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        type: 'POST',
+                        url: '{{ route("deleteUserData") }}',
+                        data: {
+                            userId: userId,
+                        },
+                        success: function(response) {
+                            console.log(response);
+                            if (response.success) {
+                                // Display success message
+                                $('#successmessage').text('User deleted successfully.');
+                                $('#successmodal').modal('show');
+                                setTimeout(function() {
+                                    $('#successmodal').modal('hide');
+                                    // Redirect to user setup page
+                                    window.location.replace('{{ route("user_setup") }}');
+                                }, 2000);
+                            } else {
+                                // Display error message
+                                $('#errormessage').text('User deletion failed');
+                                $('#errormodal').modal('show');
+                                setTimeout(function() {
+                                    $('#errormodal').modal('hide');
+                                }, 2000);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.log(error);
                             // Display error message
-                            $('#errormessage').text('User deletion failed');
+                            $('#errormessage').text('Error deleting user: ' + error);
                             $('#errormodal').modal('show');
-                            setTimeout(function() {
-                                $('#errormodal').modal('hide');
-                            }, 2000);
+                            console.error('Error deleting user:', error);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log(error);
-                        // Display error message
-                        $('#errormessage').text('Error deleting user: ' + error);
-                        $('#errormodal').modal('show');
-                        console.error('Error deleting user:', error);
-                    }
-                });
+                    });
+                }
             });
         });
-
-
-
     });
 </script>
 @endsection

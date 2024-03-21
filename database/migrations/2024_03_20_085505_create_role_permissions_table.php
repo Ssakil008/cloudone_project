@@ -20,7 +20,11 @@ return new class extends Migration
             $table->string('edit');
             $table->string('delete');
             $table->timestamps();
+        
+            // Define a composite unique constraint for role_id and module
+            $table->unique(['role_id', 'module']);
         });
+        
     }
 
     /**

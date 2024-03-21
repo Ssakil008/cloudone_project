@@ -37,8 +37,8 @@ class UserController extends Controller
     public function registerUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email|max:255',
-            'mobile' => 'required|string|min:11',
+            'email' => 'required|string|email|max:255|unique:users',
+            'mobile' => 'required|string|min:11|unique:users',
             'password' => 'required|string|min:8',
         ]);
 
@@ -123,8 +123,8 @@ class UserController extends Controller
     public function insertCredential(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'credential_for' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
+            'credential_for' => 'required|string|max:255|unique:credential_for_servers',
+            'email' => 'required|string|email|max:255|unique:credential_for_servers',
             'mobile' => 'required|string|min:11',
             'url' => 'required|string|url',
             'ip_address' => 'required|ip',
@@ -188,7 +188,7 @@ class UserController extends Controller
     public function addRole(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'role' => 'required|string|max:255',
+            'role' => 'required|string|max:255|unique:roles',
             'description' => 'required|string|max:255',
         ]);
 
@@ -221,40 +221,47 @@ class UserController extends Controller
 
     public function insertPermission(Request $request)
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'role_id' => 'required|integer', // Ensure role_id is present and is an integer
-            'permission' => 'required|string',
+        $validatedData = Validator::make($request->all(), [
+            'role_id' => 'required|integer',
+            'module' => 'required|string',
             'read' => 'nullable|string',
             'create' => 'nullable|string',
             'edit' => 'nullable|string',
             'delete' => 'nullable|string',
         ]);
 
-        try {
-            // Create a new RolePermission instance and fill it with the validated data
+        if ($validatedData->fails()) {
+            return response()->json(['success' => false, 'errors' => $validatedData->errors()->toArray()], 422);
+        }
+
+        $id = $request->input('permissionId');
+
+        if (empty($id)) {
+            // Insertion
             $rolePermission = new RolePermission();
-            $rolePermission->role_id = $validatedData['role_id'];
-            $rolePermission->module = $validatedData['permission'];
-            $rolePermission->read = $validatedData['read'] ?? 'no';
-            $rolePermission->create = $validatedData['create'] ?? 'no';
-            $rolePermission->edit = $validatedData['edit'] ?? 'no';
-            $rolePermission->delete = $validatedData['delete'] ?? 'no';
-
-            // Save the role permission to the database
-            $rolePermissionResult = $rolePermission->save();
-
-            if ($rolePermissionResult) {
-                return response()->json(['success' => true]);
-            } else {
-                return response()->json(['success' => false, 'fail' => 'Something went wrong']);
+        } else {
+            // Update
+            $rolePermission = RolePermission::find($id);
+            if (!$rolePermission) {
+                return response()->json(['success' => false, 'fail' => 'Role permission not found'], 404);
             }
-        } catch (\Exception $e) {
-            // Return an error response if an exception occurs
-            return response()->json(['success' => false, 'fail' => 'Failed to add permission: ' . $e->getMessage()], 500);
+        }
+
+        // Update the role permission attributes
+        $rolePermission->role_id = $request->input('role_id');
+        $rolePermission->module = $request->input('module');
+        $rolePermission->read = $request->input('read') ?? 'no';
+        $rolePermission->create = $request->input('create') ?? 'no';
+        $rolePermission->edit = $request->input('edit') ?? 'no';
+        $rolePermission->delete = $request->input('delete') ?? 'no';
+
+        // Save the role permission to the database
+        if ($rolePermission->save()) {
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'fail' => 'Something went wrong'], 500);
         }
     }
-
 
 
     public function getEntries()
@@ -266,10 +273,11 @@ class UserController extends Controller
 
     public function getAllUserData()
     {
-        $users = User::all();
-
+        $users = User::where('email', '!=', 'monir.uddincloudone@gmail.com')->get();
+    
         return response()->json(['data' => $users]);
-    }
+    }    
+
 
     public function getAllRoleData()
     {
@@ -312,14 +320,28 @@ class UserController extends Controller
         }
     }
 
-    public function getAllPermission($id)
+    public function getPermissionData($id)
     {
-        $role = Role::find($id);
+        $permission = RolePermission::find($id);
 
-        if ($role) {
-            return response()->json(['data' => $role]);
+        if ($permission) {
+            return response()->json(['data' => $permission]);
         } else {
             return response()->json(['error' => 'Entry not found'], 404);
+        }
+    }
+
+    public function getAllPermission($id)
+    {
+        // Find permissions associated with the given role ID
+        $permissions = RolePermission::where('role_id', $id)->get();
+
+        if ($permissions->isNotEmpty()) {
+            // If permissions are found, return them as JSON response
+            return response()->json(['data' => $permissions]);
+        } else {
+            // If no permissions are found, return a 404 error response
+            return response()->json(['error' => 'No permissions found for the given role ID'], 404);
         }
     }
 
@@ -385,6 +407,21 @@ class UserController extends Controller
         }
 
         $roleId->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function deletePermissionData(Request $request)
+    {
+        $Id = $request->input('permissionId');
+
+        $permissionId = RolePermission::find($Id);
+
+        if (!$permissionId) {
+            return response()->json(['success' => false, 'error' => 'User not found']);
+        }
+
+        $permissionId->delete();
 
         return response()->json(['success' => true]);
     }
