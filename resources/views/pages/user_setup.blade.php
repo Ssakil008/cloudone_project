@@ -60,6 +60,15 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="role">Role</label>
+                        <select class="form-control" name="role" id="role">
+                            @foreach (\App\Models\Role::all() as $role)
+                            <option value="{{ $role->id }}">{{ $role->role }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label for="password">Password</label>
                         <input type="password" name="password" required id="password" placeholder="Password" class="form-control input-shadow" />
                         <span class="text-danger" id="password_error"></span>
@@ -102,6 +111,8 @@
             var isValid = validateForm();
             if (isValid) {
                 var formData = $('#userForm').serialize();
+                var roleId = $('#role').val(); // Get the selected role ID
+                formData += '&roleId=' + roleId; // Append role ID to the form data
                 console.log(formData);
                 alertify.confirm('Are you sure?', function(e) {
                     if (e) {
@@ -269,6 +280,43 @@
                     });
                 }
             });
+        });
+
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            type: 'POST',
+            url: '{{ route("fetchUserPermissions") }}',
+            data: {
+                moduleName: 'user_setup' // Replace 'your_module_name' with the actual module name
+            },
+            success: function(response) {
+                var permissions = response.permissions;
+
+                // Check if the user has permission to edit
+                if (permissions.edit === 'yes') {
+                    $('.edit-btn').show();
+                } else {
+                    $('.edit-btn').hide();
+                }
+
+                if (permissions.delete === 'yes') {
+                    $('.delete-btn').show();
+                } else {
+                    $('.delete-btn').hide();
+                }
+
+                // Check if the user has permission to create
+                if (permissions.create === 'yes') {
+                    $('#addNewUser').show();
+                } else {
+                    $('#addNewUser').hide();
+                }
+            },
+            error: function(error) {
+                console.error('Error fetching permissions:', error);
+            }
         });
     });
 </script>

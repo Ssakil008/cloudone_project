@@ -19,6 +19,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/fetchSidebarModules', [UserController::class, 'fetchSidebarModules'])->name('fetchSidebarModules');
 Route::get('/register', [UserController::class, 'registration'])->name('register');
 Route::post('/register-user', [UserController::class, 'registerUser'])->name('register-user');
 Route::get('/login', [UserController::class, 'login'])->name('login');
@@ -34,6 +35,7 @@ Route::get('/getUserData/{id}', [UserController::class, 'getUserData'])->name('g
 Route::get('/getRoleData/{id}', [UserController::class, 'getRoleData'])->name('getRoleData');
 Route::get('/getPermissionData/{id}', [UserController::class, 'getPermissionData'])->name('getPermissionData');
 Route::get('/getAllPermission/{id}', [UserController::class, 'getAllPermission'])->name('getAllPermission');
+Route::post('/fetchUserPermissions', [UserController::class, 'fetchUserPermissions'])->name('fetchUserPermissions');
 Route::post('/deleteCredential', [UserController::class, 'deleteCredential'])->name('deleteCredential');
 Route::post('/deleteUserData', [UserController::class, 'deleteUserData'])->name('deleteUserData');
 Route::post('/deleteRoleData', [UserController::class, 'deleteRoleData'])->name('deleteRoleData');

@@ -279,8 +279,9 @@
 
         $('#entries-table').on('click', '.delete-btn', function() {
             var entryId = $(this).data('entry-id');
-            var userId = $(this).data('user-id');
-            console.log(entryId, userId);
+            var userId = '{{ auth()->id() }}'; // Get the login user ID
+            var moduleName = 'credential_for_server';
+            console.log(entryId, userId, moduleName);
 
             alertify.confirm('Are you sure?', function(e) {
                 if (e) {
@@ -292,17 +293,20 @@
                         url: '{{ route("deleteCredential") }}',
                         data: {
                             entryId: entryId,
+                            userId: userId,
+                            moduleName: moduleName,
                         },
                         success: function(response) {
+                            console.log(response);
                             if (response.success) {
-                                $('#successmessage').text('Entry deleted successfully.');
+                                $('#successmessage').text(response.message); // Show success message
                                 $('#successmodal').modal('show');
                                 setTimeout(function() {
                                     $('#successmodal').modal('hide');
                                     window.location.href = '{{ route("user_profile") }}';
                                 }, 2000);
                             } else {
-                                $('#errormessage').text('User deletion failed');
+                                $('#errormessage').text(response.message); // Show error message
                                 $('#errormodal').modal('show');
                                 setTimeout(function() {
                                     $('#errormodal').modal('hide');
@@ -310,13 +314,48 @@
                             }
                         },
                         error: function(error) {
-                            console.error('Error deleting entry:', error);
+                            $('#errormessage').text(response.message); // Show error message
+                            $('#errormodal').modal('show');
+                            setTimeout(function() {
+                                $('#errormodal').modal('hide');
+                            }, 2000);
                         }
                     });
                 }
             });
         });
 
+    });
+
+    $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        type: 'POST',
+        url: '{{ route("fetchUserPermissions") }}',
+        data: {
+            moduleName: 'credential_for_server' // Replace 'your_module_name' with the actual module name
+        },
+        success: function(response) {
+            var permissions = response.permissions;
+
+            // Check if the user has permission to edit
+            if (permissions.edit === 'yes') {
+                $('.edit-btn').show();
+            } else {
+                $('.edit-btn').hide();
+            }
+
+            // Check if the user has permission to create
+            if (permissions.create === 'yes') {
+                $('#addNewBtn').show();
+            } else {
+                $('#addNewBtn').hide();
+            }
+        },
+        error: function(error) {
+            console.error('Error fetching permissions:', error);
+        }
     });
 </script>
 
