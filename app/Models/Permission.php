@@ -10,7 +10,7 @@ class Permission extends Model
     use HasFactory;
 
     protected $fillable = [
-        'role_id', 'module', 'read', 'create', 'edit', 'delete',
+        'role_id', 'menu_id', 'read', 'create', 'edit', 'delete',
     ];
 
     public function role()
@@ -18,9 +18,14 @@ class Permission extends Model
         return $this->belongsTo(Role::class);
     }
 
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class, 'menu_id');
+    }
+
     // Define the composite unique constraint
     protected function uniqueConstraint()
     {
-        return $this->unique(['role_id', 'module']);
+        return $this->unique(['role_id', 'menu_id']);
     }
 }

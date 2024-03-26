@@ -59,7 +59,7 @@
                                     <table class="table table-bordered" id="permission-table" style="display: none;">
                                         <thead>
                                             <tr>
-                                                <th>Module</th>
+                                                <th>Menu</th>
                                                 <th>Read</th>
                                                 <th>Create</th>
                                                 <th>Edit</th>
@@ -130,19 +130,17 @@
                     <div class="form-group">
                         <input type="hidden" name="permissionId" id="permissionId">
                         <input type="hidden" name="role_id" id="role_id">
-                        <label for="module">Module</label>
-                        <select class="form-control" name="module" id="module">
-                            <option disabled selected>Select Module</option>
-                            <option value="dashboard">Dashboard</option>
-                            <option value="credential_for_server">Credential For Server</option>
-                            <option value="user_setup">User Setup</option>
-                            <option value="role">Role</option>
-                            <!-- Add options here if needed -->
+                        <label for="menu">Menu</label>
+                        <select class="form-control input-shadow" name="menu" id="menu">
+                            <option value="" disabled selected>Select Menu</option>
+                            @foreach (\App\Models\Menu::all() as $menu)
+                            <option value="{{ $menu->id }}">{{ $menu->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="d-flex justify-content-start align-items-center">
                         <div class="form-check mr-3">
-                            <input type="checkbox" class="form-check-input" id="readCheckbox" name="read">
+                            <input type="checkbox" class="form-check-input" id="readCheckbox" name="read" checked disabled>
                             <label class="form-check-label" for="readCheckbox">Read</label>
                         </div>
                         <div class="form-check mr-3">
@@ -398,7 +396,7 @@
 
                         $.each(permissions, function(index, permission) {
                             var row = '<tr>' +
-                                '<td>' + permission.module + '</td>' +
+                                '<td>' + permission.menu.name + '</td>' +
                                 '<td>' + permission.read + '</td>' +
                                 '<td>' + permission.create + '</td>' +
                                 '<td>' + permission.edit + '</td>' +
@@ -436,21 +434,11 @@
             $('#permissionForm').submit(function(e) {
                 e.preventDefault(); // Prevent form submission
 
-                // Check if at least one checkbox is checked
-                if (!$('#readCheckbox').is(':checked') &&
-                    !$('#createCheckbox').is(':checked') &&
-                    !$('#editCheckbox').is(':checked') &&
-                    !$('#deleteCheckbox').is(':checked')) {
-                    // If none of the checkboxes is checked, show an error message or perform other actions
-                    alertify.alert('Please select at least one permission.');
-                    return;
-                }
-
                 // Prepare form data including role_id
                 var formData = {
                     permissionId: $('#permissionId').val(),
                     role_id: $('#role_id').val(),
-                    module: $('#module').val(),
+                    menu: $('#menu').val(),
                     read: $('#readCheckbox').is(':checked') ? 'yes' : 'no',
                     create: $('#createCheckbox').is(':checked') ? 'yes' : 'no',
                     edit: $('#editCheckbox').is(':checked') ? 'yes' : 'no',
@@ -465,7 +453,7 @@
                     success: function(response) {
                         if (response.success) {
                             $('#permissionModal').modal('hide');
-                            $('#successmessage').text('New Permission Added');
+                            $('#successmessage').text(response.message);
                             $('#successmodal').modal('show');
                             setTimeout(function() {
                                 $('#successmodal').modal('hide');
@@ -473,7 +461,7 @@
                             }, 2000);
                         } else {
                             $('#permissionModal').modal('hide');
-                            $('#errormessage').text('Permission addition failed');
+                            $('#errormessage').text(response.message);
                             $('#errormodal').modal('show');
                             setTimeout(function() {
                                 $('#errormodal').modal('hide');
@@ -483,7 +471,7 @@
                     error: function(error) {
                         console.error('AJAX error:', error);
                         $('#permissionModal').modal('hide');
-                        $('#errormessage').text('Permission addition failed');
+                        $('#errormessage').text(response.message);
                         $('#errormodal').modal('show');
                         setTimeout(function() {
                             $('#errormodal').modal('hide');
@@ -509,7 +497,7 @@
                         $('#permissionModal').modal('show');
                         $('#permissionId').val(permission.id);
                         $('#role_id').val(permission.role_id);
-                        $('#module').val(permission.module);
+                        $('#menu').val(permission.menu_id);
                         $('#readCheckbox').prop('checked', permission.read === 'yes');
                         $('#createCheckbox').prop('checked', permission.create === 'yes');
                         $('#editCheckbox').prop('checked', permission.edit === 'yes');

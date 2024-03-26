@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
-            $table->string('module');
+            $table->foreignId('menu_id')->constrained('menus')->onDelete('cascade');
             $table->string('read');
             $table->string('create');
             $table->string('edit');
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
         
             // Define a composite unique constraint for role_id and module
-            $table->unique(['role_id', 'module']);
+            $table->unique(['role_id', 'menu_id']);
         });
         
     }

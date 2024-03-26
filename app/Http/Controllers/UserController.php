@@ -42,7 +42,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'mobile' => 'required|string|min:11|unique:users',
             'password' => 'required|string|min:8',
-            'roleId' => 'required|exists:roles,id', // Add validation for roleId
+            'roleId' => 'exists:roles,id', // Add validation for roleId
         ]);
 
         if ($validator->fails()) {
@@ -191,7 +191,7 @@ class UserController extends Controller
     {
         $validatedData = Validator::make($request->all(), [
             'role_id' => 'required|integer',
-            'module' => 'required|string',
+            'menu' => 'required|string',
             'read' => 'nullable|string',
             'create' => 'nullable|string',
             'edit' => 'nullable|string',
@@ -199,7 +199,7 @@ class UserController extends Controller
         ]);
 
         if ($validatedData->fails()) {
-            return response()->json(['success' => false, 'errors' => $validatedData->errors()->toArray()], 422);
+            return response()->json(['success' => false, 'message' => 'Validation failed']);
         }
 
         $id = $request->input('permissionId');
@@ -211,13 +211,13 @@ class UserController extends Controller
             // Update
             $rolePermission = Permission::find($id);
             if (!$rolePermission) {
-                return response()->json(['success' => false, 'fail' => 'Role permission not found'], 404);
+                return response()->json(['success' => false, 'message' => 'Role permission not found']);
             }
         }
 
         // Update the role permission attributes
         $rolePermission->role_id = $request->input('role_id');
-        $rolePermission->module = $request->input('module');
+        $rolePermission->menu_id = $request->input('menu');
         $rolePermission->read = $request->input('read') ?? 'no';
         $rolePermission->create = $request->input('create') ?? 'no';
         $rolePermission->edit = $request->input('edit') ?? 'no';
@@ -225,9 +225,10 @@ class UserController extends Controller
 
         // Save the role permission to the database
         if ($rolePermission->save()) {
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => 'Permission added successfully']);
         } else {
-            return response()->json(['success' => false, 'fail' => 'Something went wrong'], 500);
+            // Permission denied
+            return response()->json(['success' => false, 'message' => 'Failed to add permission']);
         }
     }
 
@@ -290,7 +291,7 @@ class UserController extends Controller
 
     public function getPermissionData($id)
     {
-        $permission = Permission::find($id);
+        $permission = Permission::with('menu')->find($id); // Assuming 'menu' is the relationship between Permission and Menu models
 
         if ($permission) {
             return response()->json(['data' => $permission]);
@@ -299,10 +300,11 @@ class UserController extends Controller
         }
     }
 
+
     public function getAllPermission($id)
     {
-        // Find permissions associated with the given role ID
-        $permissions = Permission::where('role_id', $id)->get();
+        // Find permissions associated with the given role ID and eager load the related menu data
+        $permissions = Permission::with('menu')->where('role_id', $id)->get();
 
         if ($permissions->isNotEmpty()) {
             // If permissions are found, return them as JSON response

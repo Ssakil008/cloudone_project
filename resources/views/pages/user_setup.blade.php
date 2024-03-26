@@ -61,7 +61,8 @@
 
                     <div class="form-group">
                         <label for="role">Role</label>
-                        <select class="form-control" name="role" id="role">
+                        <select class="form-control input-shadow" name="role" id="role">
+                            <option value="" disabled selected>Select Role</option>
                             @foreach (\App\Models\Role::all() as $role)
                             <option value="{{ $role->id }}">{{ $role->role }}</option>
                             @endforeach
