@@ -9,7 +9,7 @@
                 <h4 class="page-title">User Details</h4>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
-                <button type="button" id="addNewUser" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Add New User</button>
+                <button type="button" id="addNewBtn" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Add New User</button>
             </div>
         </div>
 
@@ -21,6 +21,7 @@
                         <th>Serial No</th>
                         <th>Email</th>
                         <th>Mobile</th>
+                        <th>Role</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -71,7 +72,7 @@
 
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" name="password" required id="password" placeholder="Password" class="form-control input-shadow" />
+                        <input type="password" name="password" id="password" placeholder="Password" class="form-control input-shadow" />
                         <span class="text-danger" id="password_error"></span>
                     </div>
 
@@ -99,7 +100,7 @@
 
 <script>
     $(document).ready(function() {
-        $('#addNewUser').click(function() {
+        $('#addNewBtn').click(function() {
             $('#userForm')[0].reset();
             $('#userSubmit').text('Submit');
             $('.modal-title').html('<strong>Add New User</strong>');
@@ -124,7 +125,7 @@
                             success: function(response) {
                                 if (response.success) {
                                     $('#addUserModal').modal('hide');
-                                    $('#successmessage').text('New User Added');
+                                    $('#successmessage').text(response.message);
                                     $('#successmodal').modal('show');
                                     setTimeout(function() {
                                         $('#successmodal').modal('hide');
@@ -132,13 +133,18 @@
                                     }, 2000);
                                 } else {
                                     // Handle server-side errors
-                                    displayErrors(response.errors);
+                                    $('#addUserModal').modal('hide');
+                                    $('#errormessage').text(response.message);
+                                    $('#errormodal').modal('show');
+                                    setTimeout(function() {
+                                        $('#errormodal').modal('hide');
+                                    }, 2000);
                                 }
                             },
                             error: function(error) {
                                 console.error('AJAX error:', error);
                                 $('#addUserModal').modal('hide');
-                                $('#errormessage').text('User not added');
+                                $('#errormessage').text(response.message);
                                 $('#errormodal').modal('show');
                                 setTimeout(function() {
                                     $('#errormodal').modal('hide');
@@ -189,6 +195,7 @@
                             '<td>' + serialNumber + '</td>' +
                             '<td>' + user.email + '</td>' +
                             '<td>' + user.mobile + '</td>' +
+                            '<td>' + user.user_role.role.role + '</td>' +
                             '<td>' +
                             '<i class="icon-note mr-2 edit-btn align-middle text-info" data-user-id="' + user.id + '"></i>' +
                             '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-user-id="' + user.id + '"></i>' +
@@ -204,6 +211,45 @@
             },
             error: function(error) {
                 console.error('Error fetching entries:', error);
+            }
+        });
+
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            type: 'POST',
+            url: '{{ route("fetchUserPermissions") }}',
+            data: {
+                menu_id: 2
+            },
+            success: function(response) {
+                var permissions = response.permissions;
+                console.log(permissions);
+
+                // Check if the user has permission to edit
+                if (permissions.edit === 'yes') {
+                    $('.edit-btn').show();
+                } else {
+                    $('.edit-btn').hide();
+                }
+
+                // Check if the user has permission to delete
+                if (permissions.delete === 'yes') {
+                    $('.delete-btn').show();
+                } else {
+                    $('.delete-btn').hide();
+                }
+
+                // Check if the user has permission to create
+                if (permissions.create === 'yes') {
+                    $('#addNewBtn').show();
+                } else {
+                    $('#addNewBtn').hide();
+                }
+            },
+            error: function(error) {
+                console.error('Error fetching permissions:', error);
             }
         });
 
@@ -223,6 +269,7 @@
                         $('#addUserModal').modal('show');
                         $('#userId').val(user.id);
                         $('#email').val(user.email);
+                        $('#role').val(user.user_role.role.id);
                         $('#mobile').val(user.mobile);
                         $('#userSubmit').text('Update');
                         $('.modal-title').html('<strong>Edit The User</strong>');
@@ -281,43 +328,6 @@
                     });
                 }
             });
-        });
-
-        $.ajax({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            type: 'POST',
-            url: '{{ route("fetchUserPermissions") }}',
-            data: {
-                moduleName: 'user_setup' // Replace 'your_module_name' with the actual module name
-            },
-            success: function(response) {
-                var permissions = response.permissions;
-
-                // Check if the user has permission to edit
-                if (permissions.edit === 'yes') {
-                    $('.edit-btn').show();
-                } else {
-                    $('.edit-btn').hide();
-                }
-
-                if (permissions.delete === 'yes') {
-                    $('.delete-btn').show();
-                } else {
-                    $('.delete-btn').hide();
-                }
-
-                // Check if the user has permission to create
-                if (permissions.create === 'yes') {
-                    $('#addNewUser').show();
-                } else {
-                    $('#addNewUser').hide();
-                }
-            },
-            error: function(error) {
-                console.error('Error fetching permissions:', error);
-            }
         });
     });
 </script>

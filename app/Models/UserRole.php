@@ -10,7 +10,6 @@ class UserRole extends Model
     use HasFactory;
 
     protected $table = 'user_role';
-    public $timestamps = false;
 
     /**
      * Define a relationship with the User model.
@@ -18,5 +17,11 @@ class UserRole extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Define the relationship with Role
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }

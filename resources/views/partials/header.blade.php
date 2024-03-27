@@ -56,7 +56,7 @@
                 </a>
             </div>
 
-            <ul class="sidebar-menu">
+            <ul class="sidebar-menu" id="sidebarMenu">
                 <li class="sidebar-header">MAIN NAVIGATION</li>
                 <li>
                     <!-- <a href="javaScript:void();" class="waves-effect"> -->
@@ -70,7 +70,7 @@
                     </ul> -->
                 </li>
 
-                <li>
+                <!-- <li>
                     <a href="user_profile"><i class="zmdi zmdi-dot-circle-alt"></i> Credential For Server</a>
                 </li>
                 <li>
@@ -78,7 +78,7 @@
                 </li>
                 <li>
                     <a href="role"><i class="zmdi zmdi-dot-circle-alt"></i> Role</a>
-                </li>
+                </li> -->
             </ul>
         </div>
         <!--End sidebar-wrapper-->

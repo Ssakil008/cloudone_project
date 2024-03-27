@@ -240,6 +240,46 @@
             }
         });
 
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            type: 'POST',
+            url: '{{ route("fetchUserPermissions") }}',
+            data: {
+                menu_id: 1
+            },
+            success: function(response) {
+                var permissions = response.permissions;
+
+                console.log(permissions);
+
+                // Check if the user has permission to edit
+                if (permissions.edit === 'yes') {
+                    $('.edit-btn').show();
+                } else {
+                    $('.edit-btn').hide();
+                }
+
+                // Check if the user has permission to delete
+                if (permissions.delete === 'yes') {
+                    $('.delete-btn').show();
+                } else {
+                    $('.delete-btn').hide();
+                }
+
+                // Check if the user has permission to create
+                if (permissions.create === 'yes') {
+                    $('#addNewBtn').show();
+                } else {
+                    $('#addNewBtn').hide();
+                }
+            },
+            error: function(error) {
+                console.error('Error fetching permissions:', error);
+            }
+        });
+
         $('#entries-table').on('click', '.edit-btn', function() {
             // Retrieve entry ID from the clicked button
             var entryId = $(this).data('entry-id');
@@ -325,37 +365,6 @@
             });
         });
 
-    });
-
-    $.ajax({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        type: 'POST',
-        url: '{{ route("fetchUserPermissions") }}',
-        data: {
-            moduleName: 'credential_for_server' // Replace 'your_module_name' with the actual module name
-        },
-        success: function(response) {
-            var permissions = response.permissions;
-
-            // Check if the user has permission to edit
-            if (permissions.edit === 'yes') {
-                $('.edit-btn').show();
-            } else {
-                $('.edit-btn').hide();
-            }
-
-            // Check if the user has permission to create
-            if (permissions.create === 'yes') {
-                $('#addNewBtn').show();
-            } else {
-                $('#addNewBtn').hide();
-            }
-        },
-        error: function(error) {
-            console.error('Error fetching permissions:', error);
-        }
     });
 </script>
 

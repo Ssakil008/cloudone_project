@@ -9,6 +9,7 @@ use App\Models\CredentialForServer;
 use App\Models\Role;
 use App\Models\Permission;
 use App\Models\UserRole;
+use App\Models\Menu;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,27 +40,52 @@ class UserController extends Controller
     public function registerUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email|max:255|unique:users',
-            'mobile' => 'required|string|min:11|unique:users',
-            'password' => 'required|string|min:8',
+            // 'email' => 'required|string|email|max:255|unique:users',
+            // 'mobile' => 'required|string|min:11|unique:users',
+            // 'password' => 'required|string|min:8',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $request->input('userId'),
+            'mobile' => 'required|string|min:11|unique:users,mobile,' . $request->input('userId'),
+            'password' => $request->filled('userId') ? 'nullable|string|min:8' : 'required|string|min:8',
             'roleId' => 'exists:roles,id', // Add validation for roleId
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
+            return response()->json(['success' => false, 'message' => 'Validation failed']);
+        }
+
+        $id = $request->input('userId');
+
+        if (empty($id)) {
+            // Insertion
+            $user = new User();
+        } else {
+            // Update
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'User Id not found']);
+            }
         }
 
         // Insert into users table
-        $user = new User();
         $user->email = $request->email;
         $user->mobile = $request->mobile;
-        $user->password = Hash::make($request->password);
+        // $user->password = Hash::make($request->password);
+        // Update the password only if provided
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
         $user->save();
 
-        // Attach role to the user
-        $user->roles()->attach($request->roleId);
+        if (!empty($id)) {
+            // If userId exists, update the user_role record
+            $user->roles()->sync($request->roleId); // Update existing role
+        } else {
+            // If userId does not exist, attach the role to the user
+            $user->roles()->attach($request->roleId);
+        }
 
-        return response()->json(['success' => true]);
+        // return response()->json(['success' => true, 'message' => 'User added successfully']);
+        return response()->json(['success' => true, 'message' => 'User ' . ($id ? 'updated' : 'added') . ' successfully']);
     }
 
     public function loginUser(Request $request)
@@ -90,22 +116,35 @@ class UserController extends Controller
 
     public function insertCredential(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'credential_for' => 'required|string|max:255|unique:credential_for_servers',
-            'email' => 'required|string|email|max:255|unique:credential_for_servers',
+        // Retrieve the id from the request
+        $id = $request->input('entryId');
+        
+        $rules = [
+            'credential_for' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
             'mobile' => 'required|string|min:11',
             'url' => 'required|string|url',
             'ip_address' => 'required|ip',
             'username' => 'required|string',
             'password' => 'required|string|min:8',
-        ]);
+        ];
+
+        // Add unique validation rules with exceptions for updates
+        if (empty($id)) {
+            // For insertions, no need to exclude any IDs
+            $rules['email'] .= '|unique:credential_for_servers';
+            $rules['mobile'] .= '|unique:credential_for_servers';
+        } else {
+            // For updates, exclude the current entry's ID from the unique check
+            $rules['email'] .= '|unique:credential_for_servers,email,' . $id;
+            $rules['mobile'] .= '|unique:credential_for_servers,mobile,' . $id;
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
         }
-
-        // Retrieve the id from the request
-        $id = $request->input('entryId');
 
         // Check if id is empty to determine if it's an insert or update
         if (empty($id)) {
@@ -242,10 +281,11 @@ class UserController extends Controller
 
     public function getAllUserData()
     {
-        $users = User::where('email', '!=', 'monir.uddincloudone@gmail.com')->get();
+        $users = User::with('user_role.role')->where('email', '!=', 'monir.uddincloudone@gmail.com')->get();
 
         return response()->json(['data' => $users]);
     }
+
 
 
     public function getAllRoleData()
@@ -269,7 +309,7 @@ class UserController extends Controller
 
     public function getUserData($id)
     {
-        $user = User::find($id);
+        $user = User::with('user_role.role')->find($id);
 
         if ($user) {
             return response()->json(['data' => $user]);
@@ -417,7 +457,7 @@ class UserController extends Controller
     public function fetchUserPermissions(Request $request)
     {
         $userId = auth()->id();
-        $moduleName = $request->input('moduleName');
+        $menu_id = $request->input('menu_id');
 
         // Retrieve the user's role ID from the user_role pivot table
         $userRole = UserRole::where('user_id', $userId)->first();
@@ -430,7 +470,7 @@ class UserController extends Controller
 
         // Fetch permissions based on the user's role ID and module
         $permissions = Permission::where('role_id', $roleId)
-            ->where('module', $moduleName)
+            ->where('menu_id', $menu_id)
             ->first();
 
         if (!$permissions) {
@@ -440,36 +480,35 @@ class UserController extends Controller
         return response()->json(['permissions' => $permissions]);
     }
 
-    public function fetchSidebarModules()
+    function generateSidebarMenu()
     {
-        // 1. Fetch the user's role ID from the user_role table
         $userId = auth()->id();
         $userRole = UserRole::where('user_id', $userId)->first();
 
         if (!$userRole) {
             // Handle the case where user role is not found
-            // You may redirect the user or return an error response
-            return response()->json(['error' => 'User role not found'], 404);
+            return [];
         }
 
-        // 2. Retrieve the permissions for that role
-        $roleId = $userRole->role_id;
-        $permissions = Permission::where('role_id', $roleId)->first();
+        // Step 2: Find all permissions associated with the retrieved role ID
+        $permissions = Permission::where('role_id', $userRole->role_id)->get();
 
-        if (!$permissions) {
-            // Handle the case where permissions are not found
-            // You may redirect the user or return an error response
-            return response()->json(['error' => 'Permissions not found'], 404);
+        $sidebarMenu = [];
+
+        // Step 3-5: Iterate over each permission and retrieve menu name and link
+        foreach ($permissions as $permission) {
+            // Find the menu associated with the permission
+            $menu = Menu::find($permission->menu_id);
+
+            if ($menu) {
+                // If menu exists, add its name and link to the sidebar menu
+                $sidebarMenu[] = [
+                    'id' => $menu->id,
+                    'name' => $menu->name,
+                    'link' => $menu->link,
+                ];
+            }
         }
-
-        // 3. Check if the read column is set to 'yes' for each module
-        $sidebarModules = [
-            'credential_for_server' => $permissions->read_credential_for_server === 'yes',
-            'user_setup' => $permissions->read_user_setup === 'yes',
-            'role' => $permissions->read_role === 'yes',
-        ];
-
-        // 4. Pass this information to your view
-        return view('partials.header', ['sidebarModules' => $sidebarModules]);
+        return response()->json(['sidebarMenu' => $sidebarMenu]);
     }
 }

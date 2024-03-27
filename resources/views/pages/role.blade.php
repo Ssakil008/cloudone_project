@@ -10,11 +10,11 @@
         <div class="row">
             <div class="col-lg-12 my-1">
                 <div class="d-flex justify-content-between">
-                    <button type="button" id="addNewRole" class="btn btn-info btn-sm" data-toggle="modal" data-target="#newRoleModal">
+                    <button type="button" id="addNewBtn" class="btn btn-info btn-sm" data-toggle="modal" data-target="#newRoleModal">
                         <i class="icon-plus"></i> New Role
                     </button>
                     <button type="button" id="addNewPermission" class="btn btn-info btn-sm" data-toggle="modal" data-target="#permissionModal" disabled>
-                        <i class="fa fa-pencil-square-o"></i> Permission
+                        <i class="fa fa-pencil-square-o"></i> Add Permission
                     </button>
                 </div>
             </div>
@@ -22,63 +22,58 @@
 
         <div class="row">
             <div class="col-lg-5">
-                <div class="card border border-dark">
+                <div class="card border">
                     <div class="card-header">
-                        <i class="fa fa-user-o"> Role</i>
-                        <div class="mb-2 px-1 py-1">
-                            <div class="row">
-                                <div class="col-md-12 col-lg-12">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" id="roles-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sl</th>
-                                                    <th>Role</th>
-                                                    <th>Description</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
+                        <i class="fa fa-user-o"></i> Role
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="roles-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sl</th>
+                                        <th>Role</th>
+                                        <th>Description</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table body content for roles -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-7">
-                <div class="card border border-dark">
+                <div class="card border">
                     <div class="card-header">
-                        <i class="icon-badge"> Permission</i>
-                        <div class="mb-2 px-1 py-1">
-                            <div class="col-md-12 col-lg-12">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" id="permission-table" style="display: none;">
-                                        <thead>
-                                            <tr>
-                                                <th>Menu</th>
-                                                <th>Read</th>
-                                                <th>Create</th>
-                                                <th>Edit</th>
-                                                <th>Delete</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Table body content -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                        <i class="icon-badge"></i> Permission
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="permission-table" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th>Menu</th>
+                                        <th>Read</th>
+                                        <th>Create</th>
+                                        <th>Edit</th>
+                                        <th>Delete</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table body content for permissions -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
+
     </div>
 </div>
 
@@ -180,7 +175,7 @@
 
 <script>
     $(document).ready(function() {
-        $('#addNewRole').click(function() {
+        $('#addNewBtn').click(function() {
             $('#addRoleForm')[0].reset();
             $('#roleSubmit').text('Submit');
             $('.modal-title').html('<strong>Add New Role</strong>');
@@ -285,6 +280,51 @@
             },
             error: function(error) {
                 console.error('Error fetching roles:', error);
+            }
+        });
+
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            type: 'POST',
+            url: '{{ route("fetchUserPermissions") }}',
+            data: {
+                menu_id: 3
+            },
+            success: function(response) {
+                var permissions = response.permissions;
+                console.log(permissions);
+
+                // Check if the user has permission to edit
+                if (permissions.edit === 'yes') {
+                    $('.role-edit-btn').show();
+                    $('.permission-edit-btn').show();
+                } else {
+                    $('.role-edit-btn').hide();
+                    $('.permission-edit-btn').hide();
+                }
+
+                // Check if the user has permission to delete
+                if (permissions.delete === 'yes') {
+                    $('.role-delete-btn').show();
+                    $('.permission-delete-btn').show();
+                } else {
+                    $('.role-delete-btn').hide();
+                    $('.permission-delete-btn').hide();
+                }
+
+                // Check if the user has permission to create
+                if (permissions.create === 'yes') {
+                    $('#addNewBtn').show();
+                    $('#addNewPermission').show();
+                } else {
+                    $('#addNewBtn').hide();
+                    $('#addNewPermission').hide();
+                }
+            },
+            error: function(error) {
+                console.error('Error fetching permissions:', error);
             }
         });
 

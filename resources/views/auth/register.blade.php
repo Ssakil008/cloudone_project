@@ -50,7 +50,7 @@
                   <img src="assets/images/logo-icon.png" alt="logo icon">
                </div>
                <div class="card-title text-uppercase text-center py-3">Sign Up</div>
-               <form class="register-form" id="register-form">
+               <form class="register_form" id="register_form">
                   @csrf
                   <div class="form-group">
                      <label for="email" class="sr-only">Email ID</label>
@@ -172,7 +172,9 @@
          $('#submit-btn').click(function() {
             var isValid = validateForm();
             if (isValid) {
-               var formData = $('#register-form').serialize();
+               var formData = $('#register_form').serialize();
+               var roleId = $('#role').val(); // Get the selected role ID
+               formData += '&roleId=' + 2; // Append role ID to the form data
                console.log(formData);
                alertify.confirm('Are you sure?', function(e) {
                   if (e) {
@@ -215,7 +217,7 @@
       function validateForm() {
          var isValid = true;
          $('.error-message').text(''); // Clear previous error messages
-         $('#register-form input[required]').each(function() {
+         $('#register_form input[required]').each(function() {
             if ($(this).val().trim() === '') {
                var fieldName = $(this).attr('name');
                $('#' + fieldName + '_error').text(fieldName + ' is required');

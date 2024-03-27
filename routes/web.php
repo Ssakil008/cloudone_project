@@ -19,7 +19,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/fetchSidebarModules', [UserController::class, 'fetchSidebarModules'])->name('fetchSidebarModules');
+Route::get('/generateSidebarMenu', [UserController::class, 'generateSidebarMenu'])->name('generateSidebarMenu');
 Route::get('/register', [UserController::class, 'registration'])->name('register');
 Route::post('/register-user', [UserController::class, 'registerUser'])->name('register-user');
 Route::get('/login', [UserController::class, 'login'])->name('login');
