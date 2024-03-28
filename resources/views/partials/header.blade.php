@@ -28,8 +28,6 @@
     <link href="assets/css/skins.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/alertify.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/themes/default.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
-
 </head>
 
 <body>
@@ -103,13 +101,13 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown" href="#">
-                            <span class="user-profile"><i class="icon-user mr-2"></i>@auth {{auth()->user()->email}} @endauth</span>
+                            <span class="user-profile"><i class="icon-user mr-2"></i>@auth {{auth()->user()->name}} @endauth</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li class="dropdown-item user-details">
                                 <a href="javaScript:void();">
                                     <div class="media">
-                                        <div class="avatar"><i class="icon-user mr-2"></i>@auth {{auth()->user()->email}} @endauth</div>
+                                        <div class="avatar"><i class="icon-user mr-2"></i>@auth {{auth()->user()->name}} @endauth</div>
                                         <!-- <div class="media-body">
                                     <h6 class="mt-2 user-title">Sarajhon Mccoy</h6>
                                     <p class="user-subtitle">mccoy@example.com</p>
@@ -130,6 +128,7 @@
                 </ul>
             </nav>
         </header>
+        <!--End topbar header-->
 
         <!--Success  Modal -->
         <div class="modal fade" id="successmodal">
@@ -190,6 +189,3 @@
             </div>
         </div> -->
         <!-- End Modal -->
-
-
-        <!--End topbar header-->

@@ -53,6 +53,17 @@
                <form class="register_form" id="register_form">
                   @csrf
                   <div class="form-group">
+                     <label for="name" class="sr-only">Name</label>
+                     <div class="position-relative has-icon-right">
+                        <input type="text" name="name" id="name" required placeholder="Name" class="form-control input-shadow">
+                        <span class="text-danger" id="name_error"></span>
+                        <div class="form-control-position">
+                           <i class="zmdi zmdi-email"></i>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="form-group">
                      <label for="email" class="sr-only">Email ID</label>
                      <div class="position-relative has-icon-right">
                         <input type="email" name="email" id="email" required placeholder="E-mail" class="form-control input-shadow">

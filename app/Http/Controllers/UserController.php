@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Gate;
+use Yajra\DataTables\Facades\DataTables;
 
 
 class UserController extends Controller
@@ -43,6 +43,7 @@ class UserController extends Controller
             // 'email' => 'required|string|email|max:255|unique:users',
             // 'mobile' => 'required|string|min:11|unique:users',
             // 'password' => 'required|string|min:8',
+            'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $request->input('userId'),
             'mobile' => 'required|string|min:11|unique:users,mobile,' . $request->input('userId'),
             'password' => $request->filled('userId') ? 'nullable|string|min:8' : 'required|string|min:8',
@@ -50,7 +51,7 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => 'Validation failed']);
+            return response()->json(['success' => false, 'message' => 'Empty Field or Duplicate Email/Mobile']);
         }
 
         $id = $request->input('userId');
@@ -67,6 +68,7 @@ class UserController extends Controller
         }
 
         // Insert into users table
+        $user->name = $request->name;
         $user->email = $request->email;
         $user->mobile = $request->mobile;
         // $user->password = Hash::make($request->password);
@@ -118,7 +120,7 @@ class UserController extends Controller
     {
         // Retrieve the id from the request
         $id = $request->input('entryId');
-        
+
         $rules = [
             'credential_for' => 'required|string|max:255',
             'email' => 'required|string|email|max:255',
@@ -272,18 +274,54 @@ class UserController extends Controller
     }
 
 
+    // public function getEntries()
+    // {
+    //     $credentials = CredentialForServer::query();
+
+    //     return DataTables::of($credentials)
+    //         ->make(true); // Enable server-side processing
+    // }
+
     public function getEntries()
     {
-        $entries = CredentialForServer::all();
+        $queries = CredentialForServer::query()->get();
 
-        return response()->json(['data' => $entries]);
+        // DataTables expects specific JSON response structure
+        $data = [];
+        foreach ($queries as $query) {
+            $data[] = [
+                'id' => $query->id,
+                'credential_for' => $query->credential_for,
+                'email' => $query->email, // Access user email through relationship
+                'mobile' => $query->mobile,
+                'url' => $query->url,
+                'ip_address' => $query->ip_address,
+                'username' => $query->username,
+                'password' => $query->password,
+                // Add other columns as needed
+            ];
+        }
+
+        return DataTables::of($data)->make(true);
     }
+
 
     public function getAllUserData()
     {
-        $users = User::with('user_role.role')->where('email', '!=', 'monir.uddincloudone@gmail.com')->get();
+        $users = User::with('user_role.role')
+            ->where('email', '!=', 'monir.uddincloudone@gmail.com')
+            ->get();
 
-        return response()->json(['data' => $users]);
+        // Modify user data with role information before returning
+        $users->each(function ($user) {
+            if ($user->user_role) {
+                $user->role = $user->user_role->role->role; // Access role name
+            } else {
+                $user->role = ''; // Set default value if no role assigned
+            }
+        });
+
+        return DataTables::of($users)->make(true);
     }
 
 
@@ -361,7 +399,7 @@ class UserController extends Controller
     {
         $entryId = $request->input('entryId');
         $userId = $request->input('userId');
-        $moduleName = $request->input('moduleName');
+        $menu_id = $request->input('menu_id');
 
         // Retrieve the user's role ID from the user_role pivot table
         $userRole = UserRole::where('user_id', $userId)->first();
@@ -374,7 +412,7 @@ class UserController extends Controller
 
         // Check if the user's role has the 'delete' permission for the specified module
         $permissions = Permission::where('role_id', $roleId)
-            ->where('module', $moduleName)
+            ->where('menu_id', $menu_id)
             ->first();
 
         if ($permissions && $permissions->delete === 'yes') {

@@ -2,8 +2,6 @@
 @section('title','Dashboard')
 @section('content')
 
-<div class="clearfix"></div>
-
 <div class="content-wrapper">
   <div class="container-fluid">
 
@@ -631,10 +629,8 @@
   </div>
   <!-- End container-fluid-->
 
-</div><!--End content-wrapper-->
-<!--Start Back To Top Button-->
-<a href="javaScript:void();" class="back-to-top"><i class="fa fa-angle-double-up"></i> </a>
-<!--End Back To Top Button-->
+</div>
+<!--End content-wrapper-->
 
 <!--Start footer-->
 <footer class="footer">
@@ -646,53 +642,7 @@
 </footer>
 <!--End footer-->
 
-<!--start color switcher-->
-<div class="right-sidebar">
-  <div class="switcher-icon">
-    <i class="zmdi zmdi-settings zmdi-hc-spin"></i>
-  </div>
-  <div class="right-sidebar-content">
-
-
-    <p class="mb-0">Header Colors</p>
-    <hr>
-
-    <div class="mb-3">
-      <button type="button" id="default-header" class="btn btn-outline-primary">Default Header</button>
-    </div>
-
-    <ul class="switcher">
-      <li id="header1"></li>
-      <li id="header2"></li>
-      <li id="header3"></li>
-      <li id="header4"></li>
-      <li id="header5"></li>
-      <li id="header6"></li>
-    </ul>
-
-    <p class="mb-0">Sidebar Colors</p>
-    <hr>
-
-    <div class="mb-3">
-      <button type="button" id="default-sidebar" class="btn btn-outline-primary">Default Header</button>
-    </div>
-
-    <ul class="switcher">
-      <li id="theme1"></li>
-      <li id="theme2"></li>
-      <li id="theme3"></li>
-      <li id="theme4"></li>
-      <li id="theme5"></li>
-      <li id="theme6"></li>
-    </ul>
-
-  </div>
-</div>
-<!--end color switcher-->
-
-</div><!--End wrapper-->
-
-<!-- Bootstrap core JavaScript-->
+<!-- Bootstrap core JavaScript -->
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/popper.min.js"></script>
 <script src="assets/js/bootstrap.min.js"></script>
@@ -718,11 +668,4 @@
 <script src="assets/plugins/jquery-knob/excanvas.js"></script>
 <script src="assets/plugins/jquery-knob/jquery.knob.js"></script>
 
-<script>
-  $(function() {
-    $(".knob").knob();
-  });
-</script>
-<!-- Index js -->
-<script src="assets/js/index.js"></script>
 @endsection

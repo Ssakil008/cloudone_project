@@ -62,6 +62,7 @@
     </div>
 </footer>
 <!--End footer-->
+</div><!--End wrapper-->
 </body>
 
 <!-- Mirrored from codervent.com/bulona/demo/pages-user-profile.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 26 Feb 2020 10:10:24 GMT -->

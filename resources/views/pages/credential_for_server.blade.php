@@ -2,6 +2,8 @@
 @section('title','Credential For Server')
 @section('content')
 
+<div class="clearfix"></div>
+
 <div class="content-wrapper">
     <div class="container-fluid">
         <!-- Breadcrumb-->
@@ -26,6 +28,7 @@
                         <th>URL</th>
                         <th>IP Address</th>
                         <th>Username</th>
+                        <th>Password</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -36,12 +39,6 @@
         </div>
     </div>
 </div>
-
-
-
-
-
-</div><!--End wrapper-->
 
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -124,6 +121,9 @@
 <script src="assets/js/sidebar-menu.js"></script>
 <!-- Custom scripts -->
 <script src="assets/js/app-script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
 
 <script>
     $(document).ready(function() {
@@ -203,41 +203,54 @@
 
     $(document).ready(function() {
         // Fetch entries data from the server
-        $.ajax({
-            type: 'GET',
-            url: '{{ route("get-entries") }}',
-            success: function(response) {
-                // Check if the response has the 'data' property
-                if (response.hasOwnProperty('data')) {
-                    var entries = response.data;
-                    var serialNumber = 1;
-
-                    // Iterate through entries and append rows to the table
-                    $.each(entries, function(index, entry) {
-                        var row = '<tr>' +
-                            '<td>' + serialNumber + '</td>' +
-                            '<td>' + entry.credential_for + '</td>' +
-                            '<td>' + entry.email + '</td>' +
-                            '<td>' + entry.mobile + '</td>' +
-                            '<td>' + entry.url + '</td>' +
-                            '<td>' + entry.ip_address + '</td>' +
-                            '<td>' + entry.username + '</td>' +
-                            '<td>' +
-                            '<i class="icon-note mr-2 edit-btn align-middle text-info" data-entry-id="' + entry.id + '"></i>' +
-                            '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-entry-id="' + entry.id + '"></i>' +
-                            '</td>' +
-                            '</tr>';
-
-                        $('#entries-table tbody').append(row);
-                        serialNumber++;
-                    });
-                } else {
-                    console.error('Invalid response structure:', response);
-                }
+        $('#entries-table').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{{ route('get-entries') }}",
+                "type": "GET"
             },
-            error: function(error) {
-                console.error('Error fetching entries:', error);
-            }
+            "columns": [{
+                    // Render consecutive row numbers
+                    "data": null,
+                    "render": function(data, type, row, meta) {
+                        return meta.row + 1; // Row index starts from 0, so add 1 to make it consecutive
+                    }
+                },
+                {
+                    "data": "credential_for"
+                },
+                {
+                    "data": "email"
+                },
+                {
+                    "data": "mobile"
+                },
+                {
+                    "data": "url"
+                },
+                {
+                    "data": "ip_address"
+                },
+                {
+                    "data": "username"
+                },
+                {
+                    "data": "password"
+                },
+                {
+                    "data": "action",
+                    "render": function(data, type, row) {
+                        if (!data) {
+                            return '<i class="icon-note mr-2 edit-btn align-middle text-info" data-entry-id="' + row.id + '"></i>' +
+                                '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-entry-id="' + row.id + '"></i>';
+                        } else {
+                            return data;
+                        }
+                    }
+                }
+
+            ]
         });
 
         $.ajax({
@@ -320,8 +333,8 @@
         $('#entries-table').on('click', '.delete-btn', function() {
             var entryId = $(this).data('entry-id');
             var userId = '{{ auth()->id() }}'; // Get the login user ID
-            var moduleName = 'credential_for_server';
-            console.log(entryId, userId, moduleName);
+            var menu_id = 1;
+            console.log(entryId, userId, menu_id);
 
             alertify.confirm('Are you sure?', function(e) {
                 if (e) {
@@ -334,7 +347,7 @@
                         data: {
                             entryId: entryId,
                             userId: userId,
-                            moduleName: moduleName,
+                            menu_id: menu_id,
                         },
                         success: function(response) {
                             console.log(response);

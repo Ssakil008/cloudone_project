@@ -2,6 +2,8 @@
 @section('title','User Setup')
 @section('content')
 
+<div class="clearfix"></div>
+
 <div class="content-wrapper">
     <div class="container-fluid">
         <div class="row pt-2 pb-2 align-items-center">
@@ -48,6 +50,17 @@
                 <form id="userForm">
                     @csrf
                     <input type="hidden" name="userId" id="userId">
+                    <div class="form-group">
+                        <label for="name" class="sr-only">Name</label>
+                        <div class="position-relative has-icon-right">
+                            <input type="text" name="name" id="name" required placeholder="Name" class="form-control input-shadow">
+                            <span class="text-danger" id="name_error"></span>
+                            <div class="form-control-position">
+                                <i class="zmdi zmdi-email"></i>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="email">Email ID</label>
                         <input type="email" id="email" name="email" name="email" required placeholder="E-mail" value="{{old('email')}}" class="form-control input-shadow">
@@ -97,6 +110,9 @@
 <script src="assets/js/sidebar-menu.js"></script>
 <!-- Custom scripts -->
 <script src="assets/js/app-script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
 
 <script>
     $(document).ready(function() {
@@ -138,7 +154,7 @@
                                     $('#errormodal').modal('show');
                                     setTimeout(function() {
                                         $('#errormodal').modal('hide');
-                                    }, 2000);
+                                    }, 3000);
                                 }
                             },
                             error: function(error) {
@@ -148,7 +164,7 @@
                                 $('#errormodal').modal('show');
                                 setTimeout(function() {
                                     $('#errormodal').modal('hide');
-                                }, 2000);
+                                }, 3000);
                             }
                         });
                     }
@@ -180,38 +196,71 @@
 
     $(document).ready(function() {
         // Fetch entries data from the server
-        $.ajax({
-            type: 'GET',
-            url: '{{ route("getAllUserData") }}',
-            success: function(response) {
-                // Check if the response has the 'data' property
-                if (response.hasOwnProperty('data')) {
-                    var users = response.data;
-                    var serialNumber = 1;
+        // $.ajax({
+        //     type: 'GET',
+        //     url: '{{ route("getAllUserData") }}',
+        //     success: function(response) {
+        //         // Check if the response has the 'data' property
+        //         if (response.hasOwnProperty('data')) {
+        //             var users = response.data;
+        //             var serialNumber = 1;
 
-                    // Iterate through entries and append rows to the table
-                    $.each(users, function(index, user) {
-                        var row = '<tr>' +
-                            '<td>' + serialNumber + '</td>' +
-                            '<td>' + user.email + '</td>' +
-                            '<td>' + user.mobile + '</td>' +
-                            '<td>' + user.user_role.role.role + '</td>' +
-                            '<td>' +
-                            '<i class="icon-note mr-2 edit-btn align-middle text-info" data-user-id="' + user.id + '"></i>' +
-                            '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-user-id="' + user.id + '"></i>' +
-                            '</td>' +
-                            '</tr>';
+        //             // Iterate through entries and append rows to the table
+        //             $.each(users, function(index, user) {
+        //                 var row = '<tr>' +
+        //                     '<td>' + serialNumber + '</td>' +
+        //                     '<td>' + user.email + '</td>' +
+        //                     '<td>' + user.mobile + '</td>' +
+        //                     '<td>' + user.user_role.role.role + '</td>' +
+        //                     '<td>' +
+        //                     '<i class="icon-note mr-2 edit-btn align-middle text-info" data-user-id="' + user.id + '"></i>' +
+        //                     '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-user-id="' + user.id + '"></i>' +
+        //                     '</td>' +
+        //                     '</tr>';
 
-                        $('#users-table tbody').append(row);
-                        serialNumber++;
-                    });
-                } else {
-                    console.error('Invalid response structure:', response);
-                }
+        //                 $('#users-table tbody').append(row);
+        //                 serialNumber++;
+        //             });
+        //         } else {
+        //             console.error('Invalid response structure:', response);
+        //         }
+        //     },
+        //     error: function(error) {
+        //         console.error('Error fetching entries:', error);
+        //     }
+        // });
+
+        $('#users-table').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{{ route('getAllUserData')}}",
+                "type": "GET"
             },
-            error: function(error) {
-                console.error('Error fetching entries:', error);
-            }
+            "columns": [{
+                    "data": null,
+                    "render": function(data, type, row, meta) {
+                        // 'meta' parameter contains information about the row
+                        return meta.row + 1; // Row index starts from 0, so add 1 to make it consecutive
+                    }
+                },
+                {
+                    "data": "email"
+                },
+                {
+                    "data": "mobile"
+                },
+                {
+                    "data": "role"
+                },
+                {
+                    "data": "action",
+                    "render": function(data, type, row) {
+                        return data ? data : '<i class="icon-note mr-2 edit-btn align-middle text-info" data-user-id="' + row.id + '"></i>' +
+                            '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-user-id="' + row.id + '"></i> ';
+                    }
+                }
+            ]
         });
 
         $.ajax({

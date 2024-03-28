@@ -2,6 +2,8 @@
 @section('title','Role')
 @section('content')
 
+<div class="clearfix"></div>
+
 <div class="content-wrapper">
     <div class="content-header row">
     </div>
@@ -172,6 +174,7 @@
 <script src="assets/js/sidebar-menu.js"></script>
 <!-- Custom scripts -->
 <script src="assets/js/app-script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
 
 <script>
     $(document).ready(function() {
