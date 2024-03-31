@@ -40,11 +40,14 @@ Route::post('/deleteCredential', [UserController::class, 'deleteCredential'])->n
 Route::post('/deleteUserData', [UserController::class, 'deleteUserData'])->name('deleteUserData');
 Route::post('/deleteRoleData', [UserController::class, 'deleteRoleData'])->name('deleteRoleData');
 Route::post('/deletePermissionData', [UserController::class, 'deletePermissionData'])->name('deletePermissionData');
+Route::post('/storeDynamicData', [UserController::class, 'storeDynamicData'])->name('storeDynamicData');
+Route::get('/getDynamicData', [UserController::class, 'getDynamicData'])->name('getDynamicData');
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-    Route::get('/user_profile', [UserController::class, 'userProfile'])->name('user_profile');
+    Route::get('/credential_for_server', [UserController::class, 'credentialForServer'])->name('credential_for_server');
+    Route::get('/credential_for_user', [UserController::class, 'credentialForUser'])->name('credential_for_user');
     Route::get('/user_setup', [UserController::class, 'userSetup'])->name('user_setup');
     Route::get('/role', [UserController::class, 'role'])->name('role');
 });

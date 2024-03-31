@@ -157,7 +157,7 @@
                                     $('#successmodal').modal('show');
                                     setTimeout(function() {
                                         $('#successmodal').modal('hide');
-                                        window.location.href = '{{ route("user_profile") }}';
+                                        window.location.href = '{{ route("credential_for_server") }}';
                                     }, 2000);
                                 } else {
                                     // Handle server-side errors
@@ -356,7 +356,7 @@
                                 $('#successmodal').modal('show');
                                 setTimeout(function() {
                                     $('#successmodal').modal('hide');
-                                    window.location.href = '{{ route("user_profile") }}';
+                                    window.location.href = '{{ route("credential_for_server") }}';
                                 }, 2000);
                             } else {
                                 $('#errormessage').text(response.message); // Show error message

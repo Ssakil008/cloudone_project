@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\User;
 use App\Models\CredentialForServer;
+use App\Models\CredentialForUser;
 use App\Models\Role;
 use App\Models\Permission;
 use App\Models\UserRole;
@@ -13,9 +14,12 @@ use App\Models\Menu;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Yajra\DataTables\Facades\DataTables;
 
 
@@ -111,9 +115,14 @@ class UserController extends Controller
         return view('pages.dashboard');
     }
 
-    public function userProfile()
+    public function credentialForServer()
     {
         return view('pages.credential_for_server');
+    }
+
+    public function credentialForUser()
+    {
+        return view('pages.credential_for_user');
     }
 
     public function insertCredential(Request $request)
@@ -333,6 +342,13 @@ class UserController extends Controller
         return response()->json(['data' => $roles]);
     }
 
+    public function getDynamicData()
+    {
+        $data = CredentialForUser::all();
+
+        return response()->json(['data' => $data]);
+    }
+
 
     public function getEntry($id)
     {
@@ -548,5 +564,52 @@ class UserController extends Controller
             }
         }
         return response()->json(['sidebarMenu' => $sidebarMenu]);
+    }
+
+
+    public function storeDynamicData(Request $request)
+    {
+        // Get the fields array from the request
+        $fields = $request->input('fields');
+
+        // Initialize arrays to store field names and values
+        $fieldNames = [];
+        $fieldValues = [];
+
+        // Iterate over the fields array
+        foreach ($fields as $index => $field) {
+            if (isset($field['field_name'])) {
+                // Store field name
+                $fieldNames[] = $field['field_name'];
+            }
+
+            if (isset($field['field_value'])) {
+                // Store field value
+                $fieldValues[] = $field['field_value'];
+            }
+        }
+
+        // Now $fieldNames and $fieldValues should be properly paired
+        // Proceed with adding columns and setting values...
+
+        // Example: Add columns and set values
+        foreach ($fieldNames as $index => $fieldName) {
+            // Check if the column already exists
+            if (!Schema::hasColumn('credential_for_users', $fieldName)) {
+                // If the column doesn't exist, add it to the table
+                Schema::table('credential_for_users', function (Blueprint $table) use ($fieldName) {
+                    $table->string($fieldName)->after('id');
+                });
+            }
+
+            // Retrieve the first user or create a new instance if no user exists
+            $user = CredentialForUser::firstOrCreate([], ['name' => 'default_name']);
+
+            // Now, update the record with the corresponding field value
+            $user->{$fieldName} = $fieldValues[$index];
+            $user->save();
+        }
+
+        return response()->json(['success' => true, 'message' => 'Columns added and values set successfully.']);
     }
 }
