@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('credential_for_users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            // Add dynamic columns here
-            $table->timestamps(); // Adding the timestamps as the last column
+            $table->string('email')->unique();
+            $table->string('mobile')->unique();
+            $table->string('password');
+            $table->timestamps();
         });
     }
 

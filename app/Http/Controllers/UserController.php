@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\CredentialForServer;
 use App\Models\CredentialForUser;
+use App\Models\AdditionalInformation;
 use App\Models\Role;
 use App\Models\Permission;
 use App\Models\UserRole;
@@ -47,7 +48,7 @@ class UserController extends Controller
             // 'email' => 'required|string|email|max:255|unique:users',
             // 'mobile' => 'required|string|min:11|unique:users',
             // 'password' => 'required|string|min:8',
-            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $request->input('userId'),
             'mobile' => 'required|string|min:11|unique:users,mobile,' . $request->input('userId'),
             'password' => $request->filled('userId') ? 'nullable|string|min:8' : 'required|string|min:8',
@@ -72,7 +73,7 @@ class UserController extends Controller
         }
 
         // Insert into users table
-        $user->name = $request->name;
+        $user->username = $request->username;
         $user->email = $request->email;
         $user->mobile = $request->mobile;
         // $user->password = Hash::make($request->password);
@@ -344,11 +345,18 @@ class UserController extends Controller
 
     public function getDynamicData()
     {
+        // Fetch data from the dynamic table
         $data = CredentialForUser::all();
+
+        return DataTables::of($data)->make(true);
+    }
+
+    public function getAllInformation()
+    {
+        $data = AdditionalInformation::all();
 
         return response()->json(['data' => $data]);
     }
-
 
     public function getEntry($id)
     {
@@ -409,7 +417,16 @@ class UserController extends Controller
         }
     }
 
+    public function getCredentialForUserData($id)
+    {
+        $data = CredentialForUser::find($id);
 
+        if ($data) {
+            return response()->json(['data' => $data]);
+        } else {
+            return response()->json(['error' => 'Entry not found'], 404);
+        }
+    }
 
     public function deleteCredential(Request $request)
     {
@@ -452,6 +469,21 @@ class UserController extends Controller
         $Id = $request->input('userId');
 
         $userId = User::find($Id);
+
+        if (!$userId) {
+            return response()->json(['success' => false, 'error' => 'User not found']);
+        }
+
+        $userId->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function deleteCredentialForUserData(Request $request)
+    {
+        $Id = $request->input('userId');
+
+        $userId = CredentialForUser::find($Id);
 
         if (!$userId) {
             return response()->json(['success' => false, 'error' => 'User not found']);
@@ -506,6 +538,11 @@ class UserController extends Controller
     public function role()
     {
         return view('pages.role');
+    }
+
+    public function additionalInformation()
+    {
+        return view('sub-pages.additional_information');
     }
 
     public function fetchUserPermissions(Request $request)
@@ -569,47 +606,63 @@ class UserController extends Controller
 
     public function storeDynamicData(Request $request)
     {
-        // Get the fields array from the request
-        $fields = $request->input('fields');
+        DB::beginTransaction(); // Start transaction
 
-        // Initialize arrays to store field names and values
-        $fieldNames = [];
-        $fieldValues = [];
+        try {
+            // Separate predefined fields and dynamic fields
+            $predefinedFields = $request->except('fields');
+            $dynamicFields = $request->input('fields');
 
-        // Iterate over the fields array
-        foreach ($fields as $index => $field) {
-            if (isset($field['field_name'])) {
-                // Store field name
-                $fieldNames[] = $field['field_name'];
+            // Check if user ID is provided for updating existing user data
+            $userId = $request->input('userId');
+
+            // Handle predefined fields (direct insert or update)
+            if ($userId) {
+                $user = CredentialForUser::find($userId);
+                $user->fill($predefinedFields);
+                $user->save();
+            } else {
+                $user = CredentialForUser::create($predefinedFields);
             }
 
-            if (isset($field['field_value'])) {
-                // Store field value
-                $fieldValues[] = $field['field_value'];
+            // Extract dynamic field names and values (similar to existing code)
+            $fieldNames = [];
+            $fieldValues = [];
+            foreach ($dynamicFields as $index => $field) {
+                if (isset($field['field_name'])) {
+                    $fieldNames[] = $field['field_name'];
+                }
+                if (isset($field['field_value'])) {
+                    $fieldValues[] = $field['field_value'];
+                }
             }
+
+            $lastInsertedId = $user->id;
+            foreach ($fieldNames as $index => $fieldName) {
+                $newData = new AdditionalInformation();
+                $newData->credential_for_user_id = $lastInsertedId;
+                $newData->field_name = $fieldName;
+                $newData->field_value = $fieldValues[$index];
+                $newData->save();
+            }
+
+            DB::commit(); // Commit transaction
+
+            return response()->json(['success' => true, 'message' => 'Data stored successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback transaction on exception
+    
+            // Check if the exception is due to unique constraint violation
+            if (strpos($e->getMessage(), 'Integrity constraint violation') !== false) {
+                // Extract the duplicate entry value from the error message
+                preg_match("/Duplicate entry '(.+)' for key/", $e->getMessage(), $matches);
+                $errorMessage = "Duplicate entry '{$matches[1]}'";
+            } else {
+                // For other types of exceptions, use the default error message
+                $errorMessage = $e->getMessage();
+            }
+    
+            return response()->json(['success' => false, 'message' => 'Failed to store data.', 'error' => $errorMessage], 500);
         }
-
-        // Now $fieldNames and $fieldValues should be properly paired
-        // Proceed with adding columns and setting values...
-
-        // Example: Add columns and set values
-        foreach ($fieldNames as $index => $fieldName) {
-            // Check if the column already exists
-            if (!Schema::hasColumn('credential_for_users', $fieldName)) {
-                // If the column doesn't exist, add it to the table
-                Schema::table('credential_for_users', function (Blueprint $table) use ($fieldName) {
-                    $table->string($fieldName)->after('id');
-                });
-            }
-
-            // Retrieve the first user or create a new instance if no user exists
-            $user = CredentialForUser::firstOrCreate([], ['name' => 'default_name']);
-
-            // Now, update the record with the corresponding field value
-            $user->{$fieldName} = $fieldValues[$index];
-            $user->save();
-        }
-
-        return response()->json(['success' => true, 'message' => 'Columns added and values set successfully.']);
     }
 }

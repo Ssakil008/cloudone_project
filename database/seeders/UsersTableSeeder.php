@@ -22,7 +22,7 @@ class UsersTableSeeder extends Seeder
     {
         // Seed the super admin user
         User::create([
-            'name' => 'Monir Uddin',
+            'username' => 'moniruddin',
             'email' => 'monir.uddincloudone@gmail.com',
             'mobile' => '01622457458',
             'password' => Hash::make('monir121#'),
@@ -35,7 +35,7 @@ class UsersTableSeeder extends Seeder
 
         Menu::create([
             'name' => 'Credential For Server',
-            'link' => 'user_profile',
+            'link' => 'credential_for_server',
         ]);
 
         Menu::create([
@@ -46,6 +46,11 @@ class UsersTableSeeder extends Seeder
         Menu::create([
             'name' => 'Role',
             'link' => 'role',
+        ]);
+
+        Menu::create([
+            'name' => 'Credential For User',
+            'link' => 'credential_for_user',
         ]);
 
 
@@ -75,6 +80,15 @@ class UsersTableSeeder extends Seeder
         Permission::create([
             'role_id' => 1,
             'menu_id' => 3,
+            'read' => 'yes',
+            'create' => 'yes',
+            'edit' => 'yes',
+            'delete' => 'yes',
+        ]);
+
+        Permission::create([
+            'role_id' => 1,
+            'menu_id' => 4,
             'read' => 'yes',
             'create' => 'yes',
             'edit' => 'yes',

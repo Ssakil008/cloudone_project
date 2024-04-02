@@ -21,6 +21,7 @@
                 <thead>
                     <tr>
                         <th>Serial No</th>
+                        <th>User Name</th>
                         <th>Email</th>
                         <th>Mobile</th>
                         <th>Role</th>
@@ -51,13 +52,10 @@
                     @csrf
                     <input type="hidden" name="userId" id="userId">
                     <div class="form-group">
-                        <label for="name" class="sr-only">Name</label>
+                        <label for="username">User Name</label>
                         <div class="position-relative has-icon-right">
-                            <input type="text" name="name" id="name" required placeholder="Name" class="form-control input-shadow">
-                            <span class="text-danger" id="name_error"></span>
-                            <div class="form-control-position">
-                                <i class="zmdi zmdi-email"></i>
-                            </div>
+                            <input type="text" name="username" id="username" required placeholder="User Name" class="form-control input-shadow">
+                            <span class="text-danger" id="username_error"></span>
                         </div>
                     </div>
 
@@ -75,12 +73,14 @@
 
                     <div class="form-group">
                         <label for="role">Role</label>
-                        <select class="form-control input-shadow" name="role" id="role">
+                        <select class="form-control input-shadow" name="role" required id="role">
                             <option value="" disabled selected>Select Role</option>
                             @foreach (\App\Models\Role::all() as $role)
                             <option value="{{ $role->id }}">{{ $role->role }}</option>
                             @endforeach
                         </select>
+                        <span class="text-danger" id="role_error"></span>
+
                     </div>
 
                     <div class="form-group">
@@ -176,6 +176,8 @@
         function validateForm() {
             var isValid = true;
             $('.error-message').text(''); // Clear previous error messages
+
+            // Validate input fields
             $('#userForm input[required]').each(function() {
                 if ($(this).val().trim() === '') {
                     var fieldName = $(this).attr('name');
@@ -183,6 +185,16 @@
                     isValid = false;
                 }
             });
+
+            // Validate select fields
+            $('#userForm select[required]').each(function() {
+                if (!$(this).val()) {
+                    var fieldName = $(this).attr('name');
+                    $('#' + fieldName + '_error').text(fieldName + ' is required');
+                    isValid = false;
+                }
+            });
+
             return isValid;
         }
 
@@ -243,6 +255,9 @@
                         // 'meta' parameter contains information about the row
                         return meta.row + 1; // Row index starts from 0, so add 1 to make it consecutive
                     }
+                },
+                {
+                    "data": "username"
                 },
                 {
                     "data": "email"
@@ -317,6 +332,7 @@
                         $('#addUserModal .text-danger').text('');
                         $('#addUserModal').modal('show');
                         $('#userId').val(user.id);
+                        $('#username').val(user.username);
                         $('#email').val(user.email);
                         $('#role').val(user.user_role.role.id);
                         $('#mobile').val(user.mobile);

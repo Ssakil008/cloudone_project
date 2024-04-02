@@ -53,10 +53,10 @@
                <form class="register_form" id="register_form">
                   @csrf
                   <div class="form-group">
-                     <label for="name" class="sr-only">Name</label>
+                     <label for="username" class="sr-only">User Name</label>
                      <div class="position-relative has-icon-right">
-                        <input type="text" name="name" id="name" required placeholder="Name" class="form-control input-shadow">
-                        <span class="text-danger" id="name_error"></span>
+                        <input type="text" name="username" id="username" required placeholder="User Name" class="form-control input-shadow">
+                        <span class="text-danger" id="username_error"></span>
                         <div class="form-control-position">
                            <i class="zmdi zmdi-email"></i>
                         </div>
