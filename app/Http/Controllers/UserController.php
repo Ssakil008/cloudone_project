@@ -428,6 +428,18 @@ class UserController extends Controller
         }
     }
 
+    public function getMoreInfo($id, $name)
+    {
+        $data = AdditionalInformation::where('credential_for_user_id', $id)->get();
+        $name = $name;
+
+        if ($data->isNotEmpty()) {
+            return view('subPages.additional_information')->with('data', $data)->with('name', $name);
+        } else {
+            return response()->json(['error' => 'Entry not found'], 404);
+        }
+    }
+
     public function deleteCredential(Request $request)
     {
         $entryId = $request->input('entryId');
@@ -542,7 +554,7 @@ class UserController extends Controller
 
     public function additionalInformation()
     {
-        return view('sub-pages.additional_information');
+        return view('subPages.additional_information');
     }
 
     public function fetchUserPermissions(Request $request)
@@ -651,7 +663,7 @@ class UserController extends Controller
             return response()->json(['success' => true, 'message' => 'Data stored successfully.']);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback transaction on exception
-    
+
             // Check if the exception is due to unique constraint violation
             if (strpos($e->getMessage(), 'Integrity constraint violation') !== false) {
                 // Extract the duplicate entry value from the error message
@@ -661,7 +673,7 @@ class UserController extends Controller
                 // For other types of exceptions, use the default error message
                 $errorMessage = $e->getMessage();
             }
-    
+
             return response()->json(['success' => false, 'message' => 'Failed to store data.', 'error' => $errorMessage], 500);
         }
     }

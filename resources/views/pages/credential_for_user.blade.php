@@ -15,25 +15,29 @@
             </div>
         </div>
 
-        <table class="table table-bordered table-hover" id="dataTable">
-            <thead>
-                <tr>
-                    <th>Sl</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Mobile</th>
-                    <th>Password</th>
-                    <th>Actions</th>
-                    <th>Additional Information</th>
-                    <!-- Thead will be generated dynamically by DataTables -->
-                </tr>
-            </thead>
-            <tbody>
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Sl</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>Password</th>
+                        <th>Actions</th>
+                        <th>More Info</th>
+                        <!-- Thead will be generated dynamically by DataTables -->
+                    </tr>
+                </thead>
+                <tbody>
 
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<div id="response-container"></div>
 
 <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="modal_user" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -268,9 +272,9 @@
                 {
                     "data": "information",
                     "render": function(data, type, row) {
-                        return data ? data : '<a href="{{ route("additional_information") }}" class="show-btn align-middle text-info" data-user-id="' + row.id + '">Show</a>';
+                        return data ? data : '<i class="icon-info mr-2 show-info align-middle text-info" data-user-id="' + row.id + row.name + '"></i>';
                     }
-                }
+                },
             ],
         });
 
@@ -390,6 +394,35 @@
                     console.error('Error fetching user:', error);
                 }
             });
+        });
+
+        $(document).on('click', '.show-info', function() {
+            var userId = $(this).data('user-id'); // Getting user id from data attribute
+            var matches = userId.match(/^(\d+)([^\d]+)$/); // Using regex to extract id and name
+            if (matches && matches.length === 3) {
+                var id = matches[1]; // Extracting id from matches
+                var name = matches[2]; // Extracting name from matches
+
+                console.log(userId);
+                console.log(id);
+                console.log(name);
+                $.ajax({
+                    type: 'GET',
+                    url: '{{ url("getMoreInfo") }}/' + id + '/' + encodeURIComponent(name),
+                    success: function(response) {
+                        // Redirect the user to the additional information page
+                        window.location.href = "{{ route('getMoreInfo', ['id' => ':id', 'name' => ':name']) }}"
+                            .replace(':id', id) // Replace placeholder with actual id
+                            .replace(':name', encodeURIComponent(name)); // Replace placeholder with actual name
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error
+                        console.error('Error fetching additional information:', error);
+                    }
+                });
+            } else {
+                console.log("Invalid userId format: " + userId);
+            }
         });
     });
 </script>

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use Illuminate\Http\Request;
 
 
 /*
@@ -45,6 +46,7 @@ Route::get('/getDynamicData', [UserController::class, 'getDynamicData'])->name('
 Route::post('/deleteCredentialForUserData', [UserController::class, 'deleteCredentialForUserData'])->name('deleteCredentialForUserData');
 Route::get('/getCredentialForUserData/{id}', [UserController::class, 'getCredentialForUserData'])->name('getCredentialForUserData');
 Route::get('/get_all_information', [UserController::class, 'getAllInformation'])->name('get_all_information');
+Route::get('/getMoreInfo/{id}/{name}', [UserController::class, 'getMoreInfo'])->name('getMoreInfo');
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
 Route::group(['middleware' => 'auth'], function () {
@@ -54,4 +56,5 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/user_setup', [UserController::class, 'userSetup'])->name('user_setup');
     Route::get('/role', [UserController::class, 'role'])->name('role');
     Route::get('/additional_information', [UserController::class, 'additionalInformation'])->name('additional_information');
+
 });
