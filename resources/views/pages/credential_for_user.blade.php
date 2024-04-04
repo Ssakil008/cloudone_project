@@ -108,6 +108,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
 
 <script>
     $(document).ready(function() {
@@ -237,7 +239,7 @@
 
     $(document).ready(function() {
 
-        $('#dataTable').DataTable({
+        var table = $('#dataTable').DataTable({
             "processing": true,
             "serverSide": true,
             "ajax": {
@@ -275,8 +277,35 @@
                         return data ? data : '<i class="icon-info mr-2 show-info align-middle text-info" data-user-id="' + row.id + row.name + '"></i>';
                     }
                 },
-            ],
+            ]
         });
+
+        // Create the column selector dropdown
+        var select = $('<select id="selectColumn" style="margin: 0px 10px;"><option value="">Show All Columns</option></select>')
+            .appendTo('#dataTable_wrapper .dataTables_length')
+            .on('change', function() {
+                var val = $(this).val();
+
+                // Toggle visibility of columns based on dropdown selection
+                table.columns().every(function() {
+                    if (val === '') {
+                        this.visible(true);
+                    } else {
+                        this.visible(this.header().textContent === val);
+                    }
+                });
+            });
+
+        // Populate the dropdown with column names and checkboxes
+        table.columns().every(function() {
+            var column = this;
+            var colName = column.header().textContent;
+            var checkbox = $('<input type="checkbox" checked>').on('change', function() {
+                column.visible($(this).is(':checked'));
+            });
+            $('<option/>').val(colName).text(colName).appendTo(select).append(checkbox);
+        });
+        
 
         $.ajax({
             headers: {

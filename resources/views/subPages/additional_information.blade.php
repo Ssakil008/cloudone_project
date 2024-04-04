@@ -36,10 +36,10 @@
         <div class="clearfix"></div>
 
         <div class="content-wrapper">
-
             <div class="col-sm-9">
                 <h4 class="info-title" style="padding: 10px 0px;"> Additional information of {{ $name }}</h4>
             </div>
+
             <div class="additional_information col-sm-6">
                 @if($data->isNotEmpty())
                 <div class="table-responsive">
@@ -64,8 +64,11 @@
                 <p>No additional information found.</p>
                 @endif
             </div>
-        </div>
 
+            <div class="col-sm-6">
+                <a href="{{ route('credential_for_user')}}" class="btn btn-info btn-sm"><i class="zmdi zmdi-dot-circle-alt"></i> Back</a>
+            </div>
+        </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <!-- Bootstrap Bundle with Popper -->

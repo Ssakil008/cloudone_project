@@ -348,7 +348,8 @@ class UserController extends Controller
         // Fetch data from the dynamic table
         $data = CredentialForUser::all();
 
-        return DataTables::of($data)->make(true);
+        return DataTables::of($data)
+        ->make(true);
     }
 
     public function getAllInformation()
