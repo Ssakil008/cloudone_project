@@ -31,7 +31,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/credential_for_user', [UserController::class, 'credentialForUser'])->name('credential_for_user');
     Route::get('/user_setup', [UserController::class, 'userSetup'])->name('user_setup');
     Route::get('/role', [UserController::class, 'role'])->name('role');
-    Route::get('/additional_information', [UserController::class, 'additionalInformation'])->name('additional_information');
+    Route::get('/additional_information/{id}', [UserController::class, 'additional_information'])->name('additional_information');
     Route::get('/generateSidebarMenu', [UserController::class, 'generateSidebarMenu'])->name('generateSidebarMenu');
     Route::post('/insertCredential', [UserController::class, 'insertCredential'])->name('insertCredential');
     Route::post('/addRole', [UserController::class, 'addRole'])->name('addRole');
@@ -54,6 +54,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/deleteCredentialForUserData', [UserController::class, 'deleteCredentialForUserData'])->name('deleteCredentialForUserData');
     Route::get('/getCredentialForUserData/{id}', [UserController::class, 'getCredentialForUserData'])->name('getCredentialForUserData');
     Route::get('/get_all_information', [UserController::class, 'getAllInformation'])->name('get_all_information');
-    Route::get('/getMoreInfo/{id}/{name}', [UserController::class, 'getMoreInfo'])->name('getMoreInfo');
+    Route::get('/getMoreInfo/{id}', [UserController::class, 'getMoreInfo'])->name('getMoreInfo');
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 });

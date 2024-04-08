@@ -429,13 +429,12 @@ class UserController extends Controller
         }
     }
 
-    public function getMoreInfo($id, $name)
+    public function getMoreInfo($id)
     {
         $data = AdditionalInformation::where('credential_for_user_id', $id)->get();
-        $name = $name;
 
-        if ($data->isNotEmpty()) {
-            return view('subPages.additional_information')->with('data', $data)->with('name', $name);
+        if ($data) {
+            return response()->json(['data' => $data]);
         } else {
             return response()->json(['error' => 'Entry not found'], 404);
         }
@@ -553,11 +552,11 @@ class UserController extends Controller
         return view('pages.role');
     }
 
-    public function additionalInformation()
+    public function additional_information($id)
     {
-        return view('subPages.additional_information');
+        return view('subPages.additional_information', compact('id'));
     }
-
+    
     public function fetchUserPermissions(Request $request)
     {
         $userId = auth()->id();

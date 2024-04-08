@@ -37,8 +37,6 @@
     </div>
 </div>
 
-<div id="response-container"></div>
-
 <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="modal_user" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -54,7 +52,7 @@
                     @csrf
                     <input type="hidden" name="userId" id="userId">
                     <div class="form-group">
-                        <label for="credential_for">Name</label>
+                        <label for="name">Name</label>
                         <input type="text" id="name" name="name" required placeholder="Name" value="{{ old('name') }}" class="form-control input-shadow">
                         <span class="text-danger" id="name_error"></span>
                     </div>
@@ -94,6 +92,33 @@
     </div>
 </div>
 
+<div class="modal fade" id="more_info">
+    <div class="modal-dialog">
+        <div class="modal-content animated zoomInUp">
+            <div class="modal-header">
+                <h5 class="modal-title">Additional Information</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="additonal_information">
+                    <table id="more_info_table" style="border-collapse: collapse; width: 100%;">
+                        <tr>
+                            <th style="text-align: center; vertical-align: middle; border: 1px solid black;">Field Name</th>
+                            <th style="text-align: center; vertical-align: middle; border: 1px solid black;">Field Value</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+                <!-- <button type="button" class="btn btn-success"><i class="fa fa-check-square-o"></i> Save changes</button> -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap core JavaScript-->
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/popper.min.js"></script>
@@ -107,9 +132,25 @@
 <script src="assets/js/app-script.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
+<!-- ColVis JavaScript file -->
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.colVis.min.js"></script>
+
+<!-- ColVis CSS file -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+
+<!-- PDF export JavaScript (pdfMake) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+
+<!-- Excel export JavaScript (JSZip) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+<!-- Excel export JavaScript (ExcelHTML5) -->
+<script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.html5.min.js"></script>
+
 
 <script>
     $(document).ready(function() {
@@ -273,39 +314,39 @@
                 },
                 {
                     "data": "information",
+                    // "render": function(data, type, row) {
+                    //     return data ? data : '<a href="/additional_information/' + row.id + '" class="show-info align-middle text-info">Show</a>';
+                    // }
                     "render": function(data, type, row) {
-                        return data ? data : '<i class="icon-info mr-2 show-info align-middle text-info" data-user-id="' + row.id + row.name + '"></i>';
+                        return data ? data : '<a href="#" class="show-info align-middle text-info" data-user-id="' + row.id + row.name + '">Show</a> ';
                     }
                 },
+            ],
+            "dom": 'Bfrtip', // Custom dom structure with buttons
+            "buttons": [
+                ['pageLength'],
+                {
+                    extend: 'colvis', 
+                    text: 'Column Visibility' 
+                },
+                {
+                    extend: 'collection', 
+                    text: 'Export', 
+                    buttons: [ 
+                        {
+                            extend: 'pdf',
+                            text: 'PDF'
+                        },
+                        {
+                            extend: 'excel',
+                            text: 'Excel'
+                        }
+                    ]
+                }
             ]
+
+
         });
-
-        // Create the column selector dropdown
-        var select = $('<select id="selectColumn" style="margin: 0px 10px;"><option value="">Show All Columns</option></select>')
-            .appendTo('#dataTable_wrapper .dataTables_length')
-            .on('change', function() {
-                var val = $(this).val();
-
-                // Toggle visibility of columns based on dropdown selection
-                table.columns().every(function() {
-                    if (val === '') {
-                        this.visible(true);
-                    } else {
-                        this.visible(this.header().textContent === val);
-                    }
-                });
-            });
-
-        // Populate the dropdown with column names and checkboxes
-        table.columns().every(function() {
-            var column = this;
-            var colName = column.header().textContent;
-            var checkbox = $('<input type="checkbox" checked>').on('change', function() {
-                column.visible($(this).is(':checked'));
-            });
-            $('<option/>').val(colName).text(colName).appendTo(select).append(checkbox);
-        });
-        
 
         $.ajax({
             headers: {
@@ -437,13 +478,47 @@
                 console.log(name);
                 $.ajax({
                     type: 'GET',
-                    url: '{{ url("getMoreInfo") }}/' + id + '/' + encodeURIComponent(name),
+                    url: '{{ url("getMoreInfo") }}/' + id,
                     success: function(response) {
-                        // Redirect the user to the additional information page
-                        window.location.href = "{{ route('getMoreInfo', ['id' => ':id', 'name' => ':name']) }}"
-                            .replace(':id', id) // Replace placeholder with actual id
-                            .replace(':name', encodeURIComponent(name)); // Replace placeholder with actual name
+                        if (response.hasOwnProperty('data')) {
+                            var users = response.data;
+                            var table = $('#more_info_table');
+                            // Remove all rows from the table
+                            $("#more_info_table").find("td").remove();
+
+                            // Iterate over the received data and populate table rows
+                            $.each(users, function(index, row) {
+                                var tableRow = $('<tr>');
+
+                                // Create table cells for field_name and field_value
+                                var fieldNameCell = $('<td>').css({
+                                    'text-align': 'center',
+                                    'vertical-align': 'middle',
+                                    'border-bottom': '1px solid black',
+                                    'border-left': '1px solid black',
+                                    'border-right': '1px solid black',
+                                }).html(row.field_name);
+
+                                var fieldValueCell = $('<td>').css({
+                                    'text-align': 'center',
+                                    'vertical-align': 'middle',
+                                    'border-bottom': '1px solid black',
+                                    'border-right': '1px solid black',
+                                }).html(row.field_value);
+
+                                // Append the cells to the row
+                                tableRow.append(fieldNameCell);
+                                tableRow.append(fieldValueCell);
+
+                                // Append the row to the table
+                                $('#more_info_table').append(tableRow);
+                            });
+
+                            // Show the modal after populating the table
+                            $("#more_info").modal("show");
+                        };
                     },
+
                     error: function(xhr, status, error) {
                         // Handle error
                         console.error('Error fetching additional information:', error);
