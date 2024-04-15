@@ -1,5 +1,30 @@
 <script>
     $(document).ready(function() {
+        function validateMobileNumber(mobileNumber) {
+            var regex = /^(\+?8801|01)[1-9]\d{8}$/;
+            return regex.test(mobileNumber);
+        }
+
+        function validateWebsite(website) {
+            try {
+                new URL(website);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function validateEmail(email) {
+            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        }
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
         // Make an AJAX call to fetch the sidebar menu
         $.ajax({
             type: 'GET',
@@ -44,12 +69,6 @@
                 }
             });
         });
-    });
-
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
     });
 </script>
 

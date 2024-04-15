@@ -139,11 +139,60 @@
     });
 
     $(document).ready(function() {
-        $('#submitBtn').click(function() {
+        function validateMobileNumber(mobileNumber) {
+            var regex = /^(\+?8801|01)[1-9]\d{8}$/;
+            return regex.test(mobileNumber);
+        }
+
+        function validateWebsite(website) {
+            try {
+                new URL(website);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function validateEmail(email) {
+            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        }
+
+        $('#submitBtn').click(function(e) {
             var isValid = validateForm();
             if (isValid) {
+                // Create a new FormData object
                 var formData = $('#myForm').serialize();
-                console.log(formData);
+
+                // Get the email from the form
+                var email = document.getElementById('email').value;
+
+                // Check email validation
+                if (!validateEmail(email)) {
+                    alertify.alert('E-mail is not valid');
+                    return; // Prevent form submission if email is invalid
+                }
+
+                // Get the mobile number from the form
+                var mobileNumber = document.getElementById('mobile').value;
+
+                // Check mobile number validation
+                if (!validateMobileNumber(mobileNumber)) {
+                    alertify.alert('Mobile Number is not valid');
+                    return; // Prevent form submission if mobile number is invalid
+                }
+
+                // Get the website from the form
+                var website = document.getElementById('url').value;
+
+                // Check website validation
+                if (!validateWebsite(website)) {
+                    alertify.alert('URL is not valid');
+                    return; // Prevent form submission if email is invalid
+                }
+
+                e.preventDefault(); // Prevent default form submission behavior
+
                 alertify.confirm('Are you sure?', function(e) {
                     if (e) {
                         $.ajax({
@@ -153,7 +202,7 @@
                             success: function(response) {
                                 if (response.success) {
                                     $('#myModal').modal('hide');
-                                    $('#successmessage').text('New User Added');
+                                    $('#successmessage').text(response.message);
                                     $('#successmodal').modal('show');
                                     setTimeout(function() {
                                         $('#successmodal').modal('hide');

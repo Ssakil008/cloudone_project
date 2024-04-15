@@ -125,13 +125,42 @@
     });
 
     $(document).ready(function() {
-        $('#userSubmit').click(function() {
+        function validateMobileNumber(mobileNumber) {
+            var regex = /^(\+?8801|01)[1-9]\d{8}$/;
+            return regex.test(mobileNumber);
+        }
+
+        function validateEmail(email) {
+            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        }
+        $('#userSubmit').click(function(e) {
             var isValid = validateForm();
             if (isValid) {
                 var formData = $('#userForm').serialize();
                 var roleId = $('#role').val(); // Get the selected role ID
                 formData += '&roleId=' + roleId; // Append role ID to the form data
                 console.log(formData);
+
+                // Get the email from the form
+                var email = document.getElementById('email').value;
+
+                // Check email validation
+                if (!validateEmail(email)) {
+                    alertify.alert('E-mail is not valid');
+                    return; // Prevent form submission if email is invalid
+                }
+
+                // Get the mobile number from the form
+                var mobileNumber = document.getElementById('mobile').value;
+
+                // Check mobile number validation
+                if (!validateMobileNumber(mobileNumber)) {
+                    alertify.alert('Mobile Number is not valid');
+                    return; // Prevent form submission if mobile number is invalid
+                }
+
+                e.preventDefault(); // Prevent default form submission behavior
                 alertify.confirm('Are you sure?', function(e) {
                     if (e) {
                         $.ajax({

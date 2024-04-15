@@ -176,6 +176,12 @@ class UserController extends Controller
             $entry->username = $request->username;
             $entry->password = $request->password;
             $entryResult = $entry->save();
+
+            if ($entryResult) {
+                return response()->json(['success' => true, 'message' => 'New entry added successfully.']);
+            } else {
+                return response()->json(['success' => false, 'fail' => 'Failed to add new entry.']);
+            }
         } else {
             // // Update
             // $user = User::find($id);
@@ -193,21 +199,22 @@ class UserController extends Controller
             $entry->username = $request->username;
             $entry->password = $request->password;
             $entryResult = $entry->save();
-        }
 
-        // if ($userResult && $entryResult) {
-        if ($entryResult) {
-            return response()->json(['success' => true]);
-        } else {
-            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
+            if ($entryResult) {
+                return response()->json(['success' => true, 'message' => 'Entry updated successfully.']);
+            } else {
+                return response()->json(['success' => false, 'fail' => 'Failed to update entry.']);
+            }
         }
     }
 
 
     public function addRole(Request $request)
     {
+        // Retrieve the id from the request
+        $id = $request->input('roleId');
         $validator = Validator::make($request->all(), [
-            'role' => 'required|string|max:255|unique:roles',
+            'role' => 'required|string|max:255|unique:roles,role,' . $id,
             'description' => 'required|string|max:255',
         ]);
 
@@ -215,26 +222,32 @@ class UserController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
         }
 
-        $id = $request->input('roleId');
-
         if (empty($id)) {
-            //insertion
+            // Insertion
             $role = new Role();
             $role->role = $request->role;
             $role->description = $request->description;
             $roleResult = $role->save();
+
+            // Return response for insertion
+            if ($roleResult) {
+                return response()->json(['success' => true, 'message' => 'Role added successfully.']);
+            } else {
+                return response()->json(['success' => false, 'fail' => 'Failed to add role.']);
+            }
         } else {
             // Update
             $role = Role::find($id);
             $role->role = $request->role;
             $role->description = $request->description;
             $roleResult = $role->save();
-        }
 
-        if ($roleResult) {
-            return response()->json(['success' => true]);
-        } else {
-            return response()->json(['success' => false, 'fail' => 'Something went wrong']);
+            // Return response for update
+            if ($roleResult) {
+                return response()->json(['success' => true, 'message' => 'Role updated successfully.']);
+            } else {
+                return response()->json(['success' => false, 'fail' => 'Failed to update role.']);
+            }
         }
     }
 
@@ -349,7 +362,7 @@ class UserController extends Controller
         $data = CredentialForUser::all();
 
         return DataTables::of($data)
-        ->make(true);
+            ->make(true);
     }
 
     public function getAllInformation()
@@ -433,11 +446,31 @@ class UserController extends Controller
     {
         $data = AdditionalInformation::where('credential_for_user_id', $id)->get();
 
-        if ($data) {
-            return response()->json(['data' => $data]);
-        } else {
-            return response()->json(['error' => 'Entry not found'], 404);
+        if ($data->isEmpty()) {
+            return response()->json(['error' => 'Additional Information is empty'], 404);
         }
+
+        // Modify field_name values
+        $data->transform(function ($item, $key) {
+            $item['field_name'] = $this->formatFieldName($item['field_name']);
+            return $item;
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    private function formatFieldName($fieldName)
+    {
+        // Remove underscores, hyphens, and other symbols
+        $formattedFieldName = str_replace(['_', '-'], ' ', $fieldName);
+
+        // Separate words in camelCase
+        $formattedFieldName = preg_replace('/(?<!^)([A-Z][a-z]|(?<=[a-z])[A-Z])/', ' $1', $formattedFieldName);
+
+        // Capitalize the first letter of each word
+        $formattedFieldName = ucwords($formattedFieldName);
+
+        return $formattedFieldName;
     }
 
     public function deleteCredential(Request $request)
@@ -556,7 +589,7 @@ class UserController extends Controller
     {
         return view('subPages.additional_information', compact('id'));
     }
-    
+
     public function fetchUserPermissions(Request $request)
     {
         $userId = auth()->id();
@@ -637,25 +670,27 @@ class UserController extends Controller
                 $user = CredentialForUser::create($predefinedFields);
             }
 
-            // Extract dynamic field names and values (similar to existing code)
-            $fieldNames = [];
-            $fieldValues = [];
-            foreach ($dynamicFields as $index => $field) {
-                if (isset($field['field_name'])) {
-                    $fieldNames[] = $field['field_name'];
+            if (!empty($dynamicFields)) {
+                // Extract dynamic field names and values (similar to existing code)
+                $fieldNames = [];
+                $fieldValues = [];
+                foreach ($dynamicFields as $index => $field) {
+                    if (isset($field['field_name'])) {
+                        $fieldNames[] = $field['field_name'];
+                    }
+                    if (isset($field['field_value'])) {
+                        $fieldValues[] = $field['field_value'];
+                    }
                 }
-                if (isset($field['field_value'])) {
-                    $fieldValues[] = $field['field_value'];
-                }
-            }
 
-            $lastInsertedId = $user->id;
-            foreach ($fieldNames as $index => $fieldName) {
-                $newData = new AdditionalInformation();
-                $newData->credential_for_user_id = $lastInsertedId;
-                $newData->field_name = $fieldName;
-                $newData->field_value = $fieldValues[$index];
-                $newData->save();
+                $lastInsertedId = $user->id;
+                foreach ($fieldNames as $index => $fieldName) {
+                    $newData = new AdditionalInformation();
+                    $newData->credential_for_user_id = $lastInsertedId;
+                    $newData->field_name = $fieldName;
+                    $newData->field_value = $fieldValues[$index];
+                    $newData->save();
+                }
             }
 
             DB::commit(); // Commit transaction

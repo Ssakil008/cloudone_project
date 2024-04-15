@@ -41,12 +41,19 @@ File: app-style
 @import url("https://fonts.googleapis.com/css?family=Mukta|Roboto");
 
 /* General */
-/* added by monir: table css */
+/* added by monir: */
 .table th,
 .table td {
     text-align: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Change headings font */
+    color: #000;
 }
 
+.modal-body {
+    font-family: "Roboto", sans-serif; /* Change headings font */
+    color: #000;
+}
+/*end: monir */
 
 h1,
 h2,

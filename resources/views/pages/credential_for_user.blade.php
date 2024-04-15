@@ -194,17 +194,46 @@
             $("#addField").before(newRow);
         });
 
+        function validateMobileNumber(mobileNumber) {
+            var regex = /^(\+?8801|01)[1-9]\d{8}$/;
+            return regex.test(mobileNumber);
+        }
+
+        function validateEmail(email) {
+            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        }
+
         $("#userSubmit").click(function(e) {
             var isValid = validateForm();
             if (isValid) {
-                e.preventDefault();
-
                 // Create a new FormData object
                 var formData = new FormData($('#dynamicForm')[0]);
-                console.log(formData);
+
+                // Get the email from the form
+                var email = document.getElementById('email').value;
+
+                // Check email validation
+                if (!validateEmail(email)) {
+                    alertify.alert('E-mail is not valid');
+                    return; // Prevent form submission if email is invalid
+                }
+
+
+                // Get the mobile number from the form
+                var mobileNumber = document.getElementById('mobile').value;
+
+                // Check mobile number validation
+                if (!validateMobileNumber(mobileNumber)) {
+                    alertify.alert('Mobile Number is not valid');
+                    return; // Prevent form submission if mobile number is invalid
+                }
+
+                e.preventDefault(); // Prevent default form submission behavior
 
                 alertify.confirm('Are you sure?', function(e) {
                     if (e) {
+                        // AJAX request to submit form data
                         $.ajax({
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -250,7 +279,7 @@
             $('.error-message').text(''); // Clear previous error messages
 
             // Validate input fields
-            $('#userForm input[required]').each(function() {
+            $('#dynamicForm input[required]').each(function() {
                 if ($(this).val().trim() === '') {
                     var fieldName = $(this).attr('name');
                     $('#' + fieldName + '_error').text(fieldName + ' is required');
@@ -259,7 +288,7 @@
             });
 
             // Validate select fields
-            $('#userForm select[required]').each(function() {
+            $('#dynamicForm select[required]').each(function() {
                 if (!$(this).val()) {
                     var fieldName = $(this).attr('name');
                     $('#' + fieldName + '_error').text(fieldName + ' is required');
@@ -268,13 +297,6 @@
             });
 
             return isValid;
-        }
-
-        // Function to display errors below respective input fields
-        function displayErrors(errors) {
-            $.each(errors, function(key, value) {
-                $('#' + key + '_error').text(value);
-            });
         }
     });
 
@@ -326,14 +348,13 @@
             "buttons": [
                 ['pageLength'],
                 {
-                    extend: 'colvis', 
-                    text: 'Column Visibility' 
+                    extend: 'colvis',
+                    text: 'Column Visibility'
                 },
                 {
-                    extend: 'collection', 
-                    text: 'Export', 
-                    buttons: [ 
-                        {
+                    extend: 'collection',
+                    text: 'Export',
+                    buttons: [{
                             extend: 'pdf',
                             text: 'PDF'
                         },
@@ -427,6 +448,9 @@
                             // Display error message
                             $('#errormessage').text('Error deleting user: ' + error);
                             $('#errormodal').modal('show');
+                            setTimeout(function() {
+                                $('#errormodal').modal('hide');
+                            }, 2000);
                             console.error('Error deleting user:', error);
                         }
                     });
@@ -492,14 +516,16 @@
 
                                 // Create table cells for field_name and field_value
                                 var fieldNameCell = $('<td>').css({
+                                    'font - family': 'Roboto',
+                                    'color': '#000',
                                     'text-align': 'center',
                                     'vertical-align': 'middle',
-                                    'border-bottom': '1px solid black',
-                                    'border-left': '1px solid black',
-                                    'border-right': '1px solid black',
+                                    'border': '1px solid black',
                                 }).html(row.field_name);
 
                                 var fieldValueCell = $('<td>').css({
+                                    'font - family': 'Roboto',
+                                    'color': '#000',
                                     'text-align': 'center',
                                     'vertical-align': 'middle',
                                     'border-bottom': '1px solid black',
@@ -522,6 +548,16 @@
                     error: function(xhr, status, error) {
                         // Handle error
                         console.error('Error fetching additional information:', error);
+                        var errorMessage = "Failed to process the request.";
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        }
+                        // Display error message
+                        $('#errormessage').text(errorMessage);
+                        $('#errormodal').modal('show');
+                        setTimeout(function() {
+                            $('#errormodal').modal('hide');
+                        }, 2000);
                     }
                 });
             } else {

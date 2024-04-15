@@ -202,7 +202,7 @@
                             success: function(response) {
                                 if (response.success) {
                                     $('#newRoleModal').modal('hide');
-                                    $('#successmessage').text('New role Added');
+                                    $('#successmessage').text(response.message);
                                     $('#successmodal').modal('show');
                                     setTimeout(function() {
                                         $('#successmodal').modal('hide');
