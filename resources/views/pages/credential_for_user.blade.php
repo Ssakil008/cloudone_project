@@ -11,7 +11,7 @@
                 <h4 class="page-title">Credential For User</h4>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
-                <button type="button" id="addNewBtn" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Add New</button>
+                <button type="button" id="addNewBtn" class="btn btn-primary">Add New User</button>
             </div>
         </div>
 
@@ -160,6 +160,33 @@
             $('#userSubmit').text('Submit');
             $('.modal-title').html('<strong>Add New User</strong>');
             $('#addUserModal .text-danger').text('');
+        });
+
+        $('#addNewBtn').click(function() {
+            var menuId = '{{ $menuId }}'; // Replace with the actual menuId you want to check permissions for
+
+            // Make an AJAX call to check permissions
+            $.ajax({
+                url: '{{ route("checkPermission") }}',
+                type: 'POST',
+                data: {
+                    menuId: menuId
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        // Show the modal
+                        $('#addUserModal').modal('show');
+                    } else {
+                        // Permission denied, show a message or handle it as needed
+                        alertify.alert('Permission denied');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error checking permission:', error);
+                    // Handle error
+                }
+            });
         });
 
         $("#removeField").click(function() {
@@ -369,49 +396,10 @@
 
         });
 
-        $.ajax({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            type: 'POST',
-            url: '{{ route("fetchUserPermissions") }}',
-            data: {
-                menu_id: 4
-            },
-            success: function(response) {
-                var permissions = response.permissions;
-                console.log(permissions);
-
-                // Check if the user has permission to edit
-                if (permissions.edit === 'yes') {
-                    $('.edit-btn').show();
-                } else {
-                    $('.edit-btn').hide();
-                }
-
-                // Check if the user has permission to delete
-                if (permissions.delete === 'yes') {
-                    $('.delete-btn').show();
-                } else {
-                    $('.delete-btn').hide();
-                }
-
-                // Check if the user has permission to create
-                if (permissions.create === 'yes') {
-                    $('#addNewBtn').show();
-                } else {
-                    $('#addNewBtn').hide();
-                }
-            },
-            error: function(error) {
-                console.error('Error fetching permissions:', error);
-            }
-        });
-
         $('#dataTable').on('click', '.delete-btn', function() {
-            var userId = $(this).data('user-id');
-            console.log(userId);
-
+            var id = $(this).data('user-id');
+            var menuId = '{{ $menuId }}';
+            console.log(id, menuId);
             alertify.confirm('Are you sure?', function(e) {
                 if (e) {
                     $.ajax({
@@ -421,37 +409,32 @@
                         type: 'POST',
                         url: '{{ route("deleteCredentialForUserData") }}',
                         data: {
-                            userId: userId,
+                            id: id,
+                            menuId: menuId,
                         },
                         success: function(response) {
                             console.log(response);
                             if (response.success) {
-                                // Display success message
-                                $('#successmessage').text('User deleted successfully.');
+                                $('#successmessage').text(response.message); // Show success message
                                 $('#successmodal').modal('show');
                                 setTimeout(function() {
                                     $('#successmodal').modal('hide');
-                                    // Redirect to user setup page
-                                    window.location.replace('{{ route("credential_for_user") }}');
+                                    window.location.href = '{{ route("credential_for_user") }}';
                                 }, 2000);
                             } else {
-                                // Display error message
-                                $('#errormessage').text('User deletion failed');
+                                $('#errormessage').text(response.message); // Show error message
                                 $('#errormodal').modal('show');
                                 setTimeout(function() {
                                     $('#errormodal').modal('hide');
                                 }, 2000);
                             }
                         },
-                        error: function(xhr, status, error) {
-                            console.log(error);
-                            // Display error message
-                            $('#errormessage').text('Error deleting user: ' + error);
+                        error: function(error) {
+                            $('#errormessage').text(response.message); // Show error message
                             $('#errormodal').modal('show');
                             setTimeout(function() {
                                 $('#errormodal').modal('hide');
                             }, 2000);
-                            console.error('Error deleting user:', error);
                         }
                     });
                 }

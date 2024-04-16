@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ViewController;
+use App\Http\Controllers\DeleteController;
+use App\Http\Controllers\UpsertController;
 use Illuminate\Http\Request;
 
 
@@ -20,21 +23,21 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/register', [UserController::class, 'registration'])->name('register');
-Route::post('/register-user', [UserController::class, 'registerUser'])->name('register-user');
-Route::get('/login', [UserController::class, 'login'])->name('login');
+Route::get('/register', [ViewController::class, 'registration'])->name('register');
+Route::get('/login', [ViewController::class, 'login'])->name('login');
 Route::post('/login-user', [UserController::class, 'loginUser'])->name('login-user');
 
 Route::group(['middleware' => 'auth'], function () {
-    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
-    Route::get('/credential_for_server', [UserController::class, 'credentialForServer'])->name('credential_for_server');
-    Route::get('/credential_for_user', [UserController::class, 'credentialForUser'])->name('credential_for_user');
-    Route::get('/user_setup', [UserController::class, 'userSetup'])->name('user_setup');
-    Route::get('/role', [UserController::class, 'role'])->name('role');
-    Route::get('/additional_information/{id}', [UserController::class, 'additional_information'])->name('additional_information');
+    Route::get('/dashboard', [ViewController::class, 'dashboard'])->name('dashboard');
+    Route::get('/credential_for_server', [ViewController::class, 'credentialForServer'])->name('credential_for_server');
+    Route::get('/credential_for_user', [ViewController::class, 'credentialForUser'])->name('credential_for_user');
+    Route::get('/user_setup', [ViewController::class, 'userSetup'])->name('user_setup');
+    Route::get('/role', [ViewController::class, 'role'])->name('role');
+    Route::get('/additional_information/{id}', [ViewController::class, 'additional_information'])->name('additional_information');
     Route::get('/generateSidebarMenu', [UserController::class, 'generateSidebarMenu'])->name('generateSidebarMenu');
-    Route::post('/insertCredential', [UserController::class, 'insertCredential'])->name('insertCredential');
-    Route::post('/addRole', [UserController::class, 'addRole'])->name('addRole');
+    Route::post('/upsertCredential', [UpsertController::class, 'upsertCredential'])->name('upsertCredential');
+    Route::post('/upsertRole', [UpsertController::class, 'upsertRole'])->name('upsertRole');
+    Route::post('/checkPermission', [UpsertController::class, 'checkPermission'])->name('checkPermission');
     Route::post('/insertPermission', [UserController::class, 'insertPermission'])->name('insertPermission');
     Route::get('/get-entries', [UserController::class, 'getEntries'])->name('get-entries');
     Route::get('/getAllRoleData', [UserController::class, 'getAllRoleData'])->name('getAllRoleData');
@@ -44,14 +47,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/getRoleData/{id}', [UserController::class, 'getRoleData'])->name('getRoleData');
     Route::get('/getPermissionData/{id}', [UserController::class, 'getPermissionData'])->name('getPermissionData');
     Route::get('/getAllPermission/{id}', [UserController::class, 'getAllPermission'])->name('getAllPermission');
-    Route::post('/fetchUserPermissions', [UserController::class, 'fetchUserPermissions'])->name('fetchUserPermissions');
-    Route::post('/deleteCredential', [UserController::class, 'deleteCredential'])->name('deleteCredential');
-    Route::post('/deleteUserData', [UserController::class, 'deleteUserData'])->name('deleteUserData');
-    Route::post('/deleteRoleData', [UserController::class, 'deleteRoleData'])->name('deleteRoleData');
-    Route::post('/deletePermissionData', [UserController::class, 'deletePermissionData'])->name('deletePermissionData');
-    Route::post('/storeDynamicData', [UserController::class, 'storeDynamicData'])->name('storeDynamicData');
+    Route::post('/deleteCredential', [DeleteController::class, 'deleteCredential'])->name('deleteCredential');
+    Route::post('/deleteUserData', [DeleteController::class, 'deleteUserData'])->name('deleteUserData');
+    Route::post('/deleteRoleData', [DeleteController::class, 'deleteRoleData'])->name('deleteRoleData');
+    Route::post('/deletePermissionData', [DeleteController::class, 'deletePermissionData'])->name('deletePermissionData');
+    Route::post('/storeDynamicData', [UpsertController::class, 'storeDynamicData'])->name('storeDynamicData');
+    Route::post('/upsertUser', [UpsertController::class, 'upsertUser'])->name('upsertUser');
+    Route::get('/fetchRoleId', [UpsertController::class, 'fetchRoleId'])->name('fetchRoleId');
     Route::get('/getDynamicData', [UserController::class, 'getDynamicData'])->name('getDynamicData');
-    Route::post('/deleteCredentialForUserData', [UserController::class, 'deleteCredentialForUserData'])->name('deleteCredentialForUserData');
+    Route::post('/deleteCredentialForUserData', [DeleteController::class, 'deleteCredentialForUserData'])->name('deleteCredentialForUserData');
     Route::get('/getCredentialForUserData/{id}', [UserController::class, 'getCredentialForUserData'])->name('getCredentialForUserData');
     Route::get('/get_all_information', [UserController::class, 'getAllInformation'])->name('get_all_information');
     Route::get('/getMoreInfo/{id}', [UserController::class, 'getMoreInfo'])->name('getMoreInfo');

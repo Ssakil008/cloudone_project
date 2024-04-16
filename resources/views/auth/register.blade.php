@@ -183,15 +183,25 @@
          $('#submit-btn').click(function() {
             var isValid = validateForm();
             if (isValid) {
-               var formData = $('#register_form').serialize();
-               var roleId = $('#role').val(); // Get the selected role ID
-               formData += '&roleId=' + 2; // Append role ID to the form data
-               console.log(formData);
-               alertify.confirm('Are you sure?', function(e) {
-                  if (e) {
+               // Fetch the roleId dynamically
+               fetchRoleIdAndSubmitForm();
+            }
+         });
+
+         function fetchRoleIdAndSubmitForm() {
+            $.ajax({
+               type: 'GET',
+               url: '{{ route("fetchRoleId") }}', // Assuming you have a route to fetch the roleId
+               success: function(response) {
+                  if (response.success) {
+                     var roleId = response.roleId;
+                     var formData = $('#register_form').serialize();
+                     formData += '&roleId=' + roleId; // Append fetched roleId to the form data
+                     console.log(formData);
+
                      $.ajax({
                         type: 'POST',
-                        url: '{{ route("register-user") }}',
+                        url: '{{ route("upsertUser") }}',
                         data: formData,
                         success: function(response) {
                            if (response.success) {
@@ -218,10 +228,26 @@
                            }, 2000);
                         }
                      });
+                  } else {
+                     console.error('Error fetching roleId:', response.message);
+                     $('#errormessage').text('Registration Failed');
+                     $('#errormodal').modal('show');
+                     setTimeout(function() {
+                        $('#errormodal').modal('hide');
+                     }, 2000);
                   }
-               });
-            }
-         });
+               },
+               error: function(error) {
+                  console.error('Error fetching roleId:', error);
+                  $('#errormessage').text('Registration Failed');
+                  $('#errormodal').modal('show');
+                  setTimeout(function() {
+                     $('#errormodal').modal('hide');
+                  }, 2000);
+               }
+            });
+         }
+
       });
 
       // Function to validate the form

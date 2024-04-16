@@ -13,7 +13,7 @@
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
                 <!-- Button to Open Modal -->
-                <button type="button" id="addNewBtn" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Add new</button>
+                <button type="button" id="addNewBtn" class="btn btn-primary">Add New User</button>
             </div>
         </div>
 
@@ -135,7 +135,32 @@
             $('#myModal .text-danger').text('');
         });
 
-        // Your other code...
+        $('#addNewBtn').click(function() {
+            var menuId = '{{ $menuId }}'; // Replace with the actual menuId you want to check permissions for
+
+            // Make an AJAX call to check permissions
+            $.ajax({
+                url: '{{ route("checkPermission") }}',
+                type: 'POST',
+                data: {
+                    menuId: menuId
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        // Show the modal
+                        $('#myModal').modal('show');
+                    } else {
+                        // Permission denied, show a message or handle it as needed
+                        alertify.alert('Permission denied');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error checking permission:', error);
+                    // Handle error
+                }
+            });
+        });
     });
 
     $(document).ready(function() {
@@ -197,7 +222,7 @@
                     if (e) {
                         $.ajax({
                             type: 'POST',
-                            url: '{{ route("insertCredential") }}',
+                            url: '{{ route("upsertCredential") }}',
                             data: formData,
                             success: function(response) {
                                 if (response.success) {
@@ -302,46 +327,6 @@
             ]
         });
 
-        $.ajax({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            type: 'POST',
-            url: '{{ route("fetchUserPermissions") }}',
-            data: {
-                menu_id: 1
-            },
-            success: function(response) {
-                var permissions = response.permissions;
-
-                console.log(permissions);
-
-                // Check if the user has permission to edit
-                if (permissions.edit === 'yes') {
-                    $('.edit-btn').show();
-                } else {
-                    $('.edit-btn').hide();
-                }
-
-                // Check if the user has permission to delete
-                if (permissions.delete === 'yes') {
-                    $('.delete-btn').show();
-                } else {
-                    $('.delete-btn').hide();
-                }
-
-                // Check if the user has permission to create
-                if (permissions.create === 'yes') {
-                    $('#addNewBtn').show();
-                } else {
-                    $('#addNewBtn').hide();
-                }
-            },
-            error: function(error) {
-                console.error('Error fetching permissions:', error);
-            }
-        });
-
         $('#entries-table').on('click', '.edit-btn', function() {
             // Retrieve entry ID from the clicked button
             var entryId = $(this).data('entry-id');
@@ -380,11 +365,9 @@
         });
 
         $('#entries-table').on('click', '.delete-btn', function() {
-            var entryId = $(this).data('entry-id');
-            var userId = '{{ auth()->id() }}'; // Get the login user ID
-            var menu_id = 1;
-            console.log(entryId, userId, menu_id);
-
+            var id = $(this).data('entry-id');
+            var menuId = '{{ $menuId }}';
+            console.log(id, menuId);
             alertify.confirm('Are you sure?', function(e) {
                 if (e) {
                     $.ajax({
@@ -394,9 +377,8 @@
                         type: 'POST',
                         url: '{{ route("deleteCredential") }}',
                         data: {
-                            entryId: entryId,
-                            userId: userId,
-                            menu_id: menu_id,
+                            id: id,
+                            menuId: menuId,
                         },
                         success: function(response) {
                             console.log(response);

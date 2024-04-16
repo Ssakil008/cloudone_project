@@ -11,7 +11,7 @@
                 <h4 class="page-title">User Details</h4>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
-                <button type="button" id="addNewBtn" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Add New User</button>
+                <button type="button" id="addNewBtn" class="btn btn-primary">Add New User</button>
             </div>
         </div>
 
@@ -134,6 +134,7 @@
             var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return regex.test(email);
         }
+
         $('#userSubmit').click(function(e) {
             var isValid = validateForm();
             if (isValid) {
@@ -161,45 +162,55 @@
                 }
 
                 e.preventDefault(); // Prevent default form submission behavior
-                alertify.confirm('Are you sure?', function(e) {
-                    if (e) {
-                        $.ajax({
-                            type: 'POST',
-                            url: '{{ route("register-user") }}',
-                            data: formData,
-                            success: function(response) {
-                                if (response.success) {
-                                    $('#addUserModal').modal('hide');
-                                    $('#successmessage').text(response.message);
-                                    $('#successmodal').modal('show');
-                                    setTimeout(function() {
-                                        $('#successmodal').modal('hide');
-                                        window.location.href = '{{ route("user_setup") }}';
-                                    }, 2000);
-                                } else {
-                                    // Handle server-side errors
-                                    $('#addUserModal').modal('hide');
-                                    $('#errormessage').text(response.message);
-                                    $('#errormodal').modal('show');
-                                    setTimeout(function() {
-                                        $('#errormodal').modal('hide');
-                                    }, 3000);
-                                }
-                            },
-                            error: function(error) {
-                                console.error('AJAX error:', error);
-                                $('#addUserModal').modal('hide');
-                                $('#errormessage').text(response.message);
-                                $('#errormodal').modal('show');
-                                setTimeout(function() {
-                                    $('#errormodal').modal('hide');
-                                }, 3000);
-                            }
-                        });
-                    }
-                });
+
+                // Check if userId exists in formData
+                if (formData.indexOf('userId') !== -1) {
+                    alertify.confirm('Are you sure?', function(e) {
+                        if (e) {
+                            submitFormData(formData);
+                        }
+                    });
+                } else {
+                    submitFormData(formData);
+                }
             }
         });
+
+        function submitFormData(formData) {
+            $.ajax({
+                type: 'POST',
+                url: '{{ route("upsertUser") }}',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        $('#addUserModal').modal('hide');
+                        $('#successmessage').text(response.message);
+                        $('#successmodal').modal('show');
+                        setTimeout(function() {
+                            $('#successmodal').modal('hide');
+                            window.location.href = '{{ route("user_setup") }}';
+                        }, 2000);
+                    } else {
+                        // Handle server-side errors
+                        $('#addUserModal').modal('hide');
+                        $('#errormessage').text(response.message);
+                        $('#errormodal').modal('show');
+                        setTimeout(function() {
+                            $('#errormodal').modal('hide');
+                        }, 3000);
+                    }
+                },
+                error: function(error) {
+                    console.error('AJAX error:', error);
+                    $('#addUserModal').modal('hide');
+                    $('#errormessage').text(response.message);
+                    $('#errormodal').modal('show');
+                    setTimeout(function() {
+                        $('#errormodal').modal('hide');
+                    }, 3000);
+                }
+            });
+        }
 
         // Function to validate the form
         function validateForm() {
@@ -227,12 +238,33 @@
             return isValid;
         }
 
-        // Function to display errors below respective input fields
-        function displayErrors(errors) {
-            $.each(errors, function(key, value) {
-                $('#' + key + '_error').text(value);
+
+        $('#addNewBtn').click(function() {
+            var menuId = '{{ $menuId }}'; // Replace with the actual menuId you want to check permissions for
+
+            // Make an AJAX call to check permissions
+            $.ajax({
+                url: '{{ route("checkPermission") }}',
+                type: 'POST',
+                data: {
+                    menuId: menuId
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.success) {
+                        // Show the modal
+                        $('#addUserModal').modal('show');
+                    } else {
+                        // Permission denied, show a message or handle it as needed
+                        alertify.alert('Permission denied');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error checking permission:', error);
+                    // Handle error
+                }
             });
-        }
+        });
     });
 
     $(document).ready(function() {
@@ -307,45 +339,6 @@
             ]
         });
 
-        $.ajax({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            type: 'POST',
-            url: '{{ route("fetchUserPermissions") }}',
-            data: {
-                menu_id: 2
-            },
-            success: function(response) {
-                var permissions = response.permissions;
-                console.log(permissions);
-
-                // Check if the user has permission to edit
-                if (permissions.edit === 'yes') {
-                    $('.edit-btn').show();
-                } else {
-                    $('.edit-btn').hide();
-                }
-
-                // Check if the user has permission to delete
-                if (permissions.delete === 'yes') {
-                    $('.delete-btn').show();
-                } else {
-                    $('.delete-btn').hide();
-                }
-
-                // Check if the user has permission to create
-                if (permissions.create === 'yes') {
-                    $('#addNewBtn').show();
-                } else {
-                    $('#addNewBtn').hide();
-                }
-            },
-            error: function(error) {
-                console.error('Error fetching permissions:', error);
-            }
-        });
-
         $('#users-table').on('click', '.edit-btn', function() {
             var userId = $(this).data('user-id');
             console.log(userId);
@@ -378,9 +371,9 @@
         });
 
         $('#users-table').on('click', '.delete-btn', function() {
-            var userId = $(this).data('user-id');
-            console.log(userId);
-
+            var id = $(this).data('user-id');
+            var menuId = '{{ $menuId }}';
+            console.log(id, menuId);
             alertify.confirm('Are you sure?', function(e) {
                 if (e) {
                     $.ajax({
@@ -390,34 +383,32 @@
                         type: 'POST',
                         url: '{{ route("deleteUserData") }}',
                         data: {
-                            userId: userId,
+                            id: id,
+                            menuId: menuId,
                         },
                         success: function(response) {
                             console.log(response);
                             if (response.success) {
-                                // Display success message
-                                $('#successmessage').text('User deleted successfully.');
+                                $('#successmessage').text(response.message); // Show success message
                                 $('#successmodal').modal('show');
                                 setTimeout(function() {
                                     $('#successmodal').modal('hide');
-                                    // Redirect to user setup page
-                                    window.location.replace('{{ route("user_setup") }}');
+                                    window.location.href = '{{ route("user_setup") }}';
                                 }, 2000);
                             } else {
-                                // Display error message
-                                $('#errormessage').text('User deletion failed');
+                                $('#errormessage').text(response.message); // Show error message
                                 $('#errormodal').modal('show');
                                 setTimeout(function() {
                                     $('#errormodal').modal('hide');
                                 }, 2000);
                             }
                         },
-                        error: function(xhr, status, error) {
-                            console.log(error);
-                            // Display error message
-                            $('#errormessage').text('Error deleting user: ' + error);
+                        error: function(error) {
+                            $('#errormessage').text(response.message); // Show error message
                             $('#errormodal').modal('show');
-                            console.error('Error deleting user:', error);
+                            setTimeout(function() {
+                                $('#errormodal').modal('hide');
+                            }, 2000);
                         }
                     });
                 }

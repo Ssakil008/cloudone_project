@@ -109,9 +109,9 @@
                                     <div class="media">
                                         <div class="avatar"><i class="icon-user mr-2"></i>@auth {{auth()->user()->username}} @endauth</div>
                                         <!-- <div class="media-body">
-                                    <h6 class="mt-2 user-title">Sarajhon Mccoy</h6>
-                                    <p class="user-subtitle">mccoy@example.com</p>
-                                </div> -->
+                                        <h6 class="mt-2 user-title">Sarajhon Mccoy</h6>
+                                        <p class="user-subtitle">mccoy@example.com</p>
+                                        </div> -->
                                     </div>
                                 </a>
                             </li>
