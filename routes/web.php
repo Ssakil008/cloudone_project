@@ -26,6 +26,8 @@ Route::get('/', function () {
 Route::get('/register', [ViewController::class, 'registration'])->name('register');
 Route::get('/login', [ViewController::class, 'login'])->name('login');
 Route::post('/login-user', [UserController::class, 'loginUser'])->name('login-user');
+Route::post('/upsertUser', [UpsertController::class, 'upsertUser'])->name('upsertUser');
+Route::get('/fetchRoleId', [UpsertController::class, 'fetchRoleId'])->name('fetchRoleId');
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/dashboard', [ViewController::class, 'dashboard'])->name('dashboard');
@@ -52,8 +54,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/deleteRoleData', [DeleteController::class, 'deleteRoleData'])->name('deleteRoleData');
     Route::post('/deletePermissionData', [DeleteController::class, 'deletePermissionData'])->name('deletePermissionData');
     Route::post('/storeDynamicData', [UpsertController::class, 'storeDynamicData'])->name('storeDynamicData');
-    Route::post('/upsertUser', [UpsertController::class, 'upsertUser'])->name('upsertUser');
-    Route::get('/fetchRoleId', [UpsertController::class, 'fetchRoleId'])->name('fetchRoleId');
     Route::get('/getDynamicData', [UserController::class, 'getDynamicData'])->name('getDynamicData');
     Route::post('/deleteCredentialForUserData', [DeleteController::class, 'deleteCredentialForUserData'])->name('deleteCredentialForUserData');
     Route::get('/getCredentialForUserData/{id}', [UserController::class, 'getCredentialForUserData'])->name('getCredentialForUserData');

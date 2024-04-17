@@ -181,7 +181,7 @@
             $('#newRoleModal .text-danger').text('');
         });
 
-        $(document).on('click', '#addNewBtn, #addNewPermission, .permission-edit-btn, .role-edit-btn', function() {
+        $(document).on('click', '#addNewBtn, #addNewPermission, #permission-edit-btn, #role-edit-btn', function() {
             var menuId = '{{ $menuId }}'; // Replace with the actual menuId you want to check permissions for
             var buttonClicked = $(this).attr('id');
             var roleId = $(this).data('role-id');
@@ -330,7 +330,7 @@
                             '<td>' + role.description + '</td>' +
                             '<td>' +
                             '<i class="icon-lock-open mr-2 permission-btn align-middle text-success" data-role-id="' + role.id + '"></i>' +
-                            '<i class="icon-note mr-2 role-edit-btn align-middle text-info" data-role-id="' + role.id + '"></i>' +
+                            '<i class="icon-note mr-2 align-middle text-info" id="role-edit-btn" data-role-id="' + role.id + '"></i>' +
                             '<i class="fa fa-trash-o role-delete-btn align-middle text-danger" data-role-id="' + role.id + '"></i>' +
                             '</td>' +
                             '</tr>';
@@ -459,7 +459,7 @@
                                 '<td>' + permission.edit + '</td>' +
                                 '<td>' + permission.delete + '</td>' +
                                 '<td>' +
-                                '<i class="icon-note mr-2 permission-edit-btn align-middle text-info" data-permission-id="' + permission.id + '"></i>' +
+                                '<i class="icon-note mr-2 align-middle text-info" id="permission-edit-btn" data-permission-id="' + permission.id + '"></i>' +
                                 '<i class="fa fa-trash-o permission-delete-btn align-middle text-danger" data-permission-id="' + permission.id + '"></i>' +
                                 '</td>' +
                                 '</tr>';

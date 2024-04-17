@@ -193,6 +193,7 @@
                type: 'GET',
                url: '{{ route("fetchRoleId") }}', // Assuming you have a route to fetch the roleId
                success: function(response) {
+                  console.log(response);
                   if (response.success) {
                      var roleId = response.roleId;
                      var formData = $('#register_form').serialize();
