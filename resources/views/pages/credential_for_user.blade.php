@@ -10,9 +10,11 @@
             <div class="col-sm-9">
                 <h4 class="page-title">Credential For User</h4>
             </div>
+            @if ($createPermission == 'yes')
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
-                <button type="button" id="addNewBtn" class="btn btn-primary">Add New User</button>
+                <button type="button" id="addNewBtn" class="btn btn-primary btn-sm">Add New User</button>
             </div>
+            @endif
         </div>
 
         <div class="table-responsive">
@@ -24,8 +26,13 @@
                         <th>Email</th>
                         <th>Mobile</th>
                         <th>Password</th>
-                        <th>Actions</th>
                         <th>More Info</th>
+                        @if ($editPermission == 'yes')
+                        <th>Edit</th>
+                        @endif
+                        @if ($deletePermission == 'yes')
+                        <th>Delete</th>
+                        @endif
                         <!-- Thead will be generated dynamically by DataTables -->
                     </tr>
                 </thead>
@@ -35,6 +42,9 @@
             </table>
         </div>
     </div>
+    <!--start overlay-->
+    <div class="overlay toggle-menu"></div>
+    <!--end overlay-->
 </div>
 
 <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="modal_user" aria-hidden="true">
@@ -162,21 +172,61 @@
             $('#addUserModal .text-danger').text('');
         });
 
-        $('#addNewBtn').click(function() {
+        $(document).on('click', '#addNewBtn, #edit-btn', function() {
             var menuId = '{{ $menuId }}'; // Replace with the actual menuId you want to check permissions for
-
+            var userId = $(this).data('user-id');
+            var buttonClicked = $(this).attr('id');
+            console.log(userId, buttonClicked);
+            if (buttonClicked === 'addNewBtn') {
+                var action = 'create';
+            } else {
+                var action = 'edit';
+            }
             // Make an AJAX call to check permissions
             $.ajax({
                 url: '{{ route("checkPermission") }}',
                 type: 'POST',
                 data: {
-                    menuId: menuId
+                    menuId: menuId,
+                    action: action
                 },
                 success: function(response) {
                     console.log(response);
                     if (response.success) {
                         // Show the modal
-                        $('#addUserModal').modal('show');
+                        if (buttonClicked === 'addNewBtn') {
+                            $('#addUserModal').modal('show');
+                        } else if (buttonClicked === 'edit-btn') {
+                            $.ajax({
+                                type: 'GET',
+                                url: '{{ url("getCredentialForUserData") }}/' + userId,
+                                success: function(response) {
+                                    console.log(response);
+                                    if (response.hasOwnProperty('data')) {
+                                        var user = response.data;
+                                        $('#dynamicForm')[0].reset();
+                                        $(".dynamic-field").remove();
+                                        $('#addUserModal .text-danger').text('');
+                                        $('#addUserModal').modal('show');
+                                        $('#userId').val(user.id);
+                                        $('#name').val(user.name);
+                                        $('#email').val(user.email);
+                                        $('#mobile').val(user.mobile);
+                                        $('#password').val(user.password);
+                                        $('#userSubmit').text('Update');
+                                        $('.modal-title').html('<strong>Edit The User</strong>');
+                                    } else {
+                                        console.error('Invalid response structure:', response);
+                                    }
+                                },
+                                error: function(error) {
+                                    console.error('Error fetching user:', error);
+                                }
+                            });
+                        } else {
+                            // Permission denied, show a message or handle it as needed
+                            alertify.alert('Permission denied');
+                        }
                     } else {
                         // Permission denied, show a message or handle it as needed
                         alertify.alert('Permission denied');
@@ -328,6 +378,55 @@
     });
 
     $(document).ready(function() {
+        var editPermission = '{{ $editPermission }}';
+        var deletePermission = '{{ $deletePermission }}';
+        var columns = [{
+                "data": null,
+                "render": function(data, type, row, meta) {
+                    return meta.row + 1;
+                }
+            },
+            {
+                "data": "name"
+            },
+            {
+                "data": "email"
+            },
+            {
+                "data": "mobile"
+            },
+            {
+                "data": "password"
+            },
+            {
+                "data": "information",
+                // "render": function(data, type, row) {
+                //     return data ? data : '<a href="/additional_information/' + row.id + '" class="show-info align-middle text-info">Show</a>';
+                // }
+                "render": function(data, type, row) {
+                    return data ? data : '<a href="#" class="show-info align-middle text-info" data-user-id="' + row.id + row.name + '">Show</a> ';
+                }
+            },
+
+        ];
+
+        if (editPermission === 'yes') {
+            columns.push({
+                "data": "edit",
+                "render": function(data, type, row) {
+                    return data ? data : '<i class="icon-note mr-2 align-middle text-info" id="edit-btn" data-user-id="' + row.id + '"></i>';
+                }
+            });
+        }
+
+        if (deletePermission === 'yes') {
+            columns.push({
+                "data": "delete",
+                "render": function(data, type, row) {
+                    return data ? data : '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-user-id="' + row.id + '"></i> ';
+                }
+            });
+        }
 
         var table = $('#dataTable').DataTable({
             "processing": true,
@@ -336,41 +435,7 @@
                 "url": "{{ route('getDynamicData')}}",
                 "type": "GET"
             },
-            "columns": [{
-                    "data": null,
-                    "render": function(data, type, row, meta) {
-                        return meta.row + 1;
-                    }
-                },
-                {
-                    "data": "name"
-                },
-                {
-                    "data": "email"
-                },
-                {
-                    "data": "mobile"
-                },
-                {
-                    "data": "password"
-                },
-                {
-                    "data": "action",
-                    "render": function(data, type, row) {
-                        return data ? data : '<i class="icon-note mr-2 edit-btn align-middle text-info" data-user-id="' + row.id + '"></i>' +
-                            '<i class="fa fa-trash-o delete-btn align-middle text-danger" data-user-id="' + row.id + '"></i> ';
-                    }
-                },
-                {
-                    "data": "information",
-                    // "render": function(data, type, row) {
-                    //     return data ? data : '<a href="/additional_information/' + row.id + '" class="show-info align-middle text-info">Show</a>';
-                    // }
-                    "render": function(data, type, row) {
-                        return data ? data : '<a href="#" class="show-info align-middle text-info" data-user-id="' + row.id + row.name + '">Show</a> ';
-                    }
-                },
-            ],
+            "columns": columns,
             "dom": 'Bfrtip', // Custom dom structure with buttons
             "buttons": [
                 ['pageLength'],
@@ -392,8 +457,6 @@
                     ]
                 }
             ]
-
-
         });
 
         $('#dataTable').on('click', '.delete-btn', function() {
@@ -441,37 +504,37 @@
             });
         });
 
-        $('#dataTable').on('click', '.edit-btn', function() {
-            var userId = $(this).data('user-id');
-            console.log(userId);
+        // $('#dataTable').on('click', '.edit-btn', function() {
+        //     var userId = $(this).data('user-id');
+        //     console.log(userId);
 
-            $.ajax({
-                type: 'GET',
-                url: '{{ url("getCredentialForUserData") }}/' + userId,
-                success: function(response) {
-                    console.log(response);
-                    if (response.hasOwnProperty('data')) {
-                        var user = response.data;
-                        $('#dynamicForm')[0].reset();
-                        $(".dynamic-field").remove();
-                        $('#addUserModal .text-danger').text('');
-                        $('#addUserModal').modal('show');
-                        $('#userId').val(user.id);
-                        $('#name').val(user.name);
-                        $('#email').val(user.email);
-                        $('#mobile').val(user.mobile);
-                        $('#password').val(user.password);
-                        $('#userSubmit').text('Update');
-                        $('.modal-title').html('<strong>Edit The User</strong>');
-                    } else {
-                        console.error('Invalid response structure:', response);
-                    }
-                },
-                error: function(error) {
-                    console.error('Error fetching user:', error);
-                }
-            });
-        });
+        //     $.ajax({
+        //         type: 'GET',
+        //         url: '{{ url("getCredentialForUserData") }}/' + userId,
+        //         success: function(response) {
+        //             console.log(response);
+        //             if (response.hasOwnProperty('data')) {
+        //                 var user = response.data;
+        //                 $('#dynamicForm')[0].reset();
+        //                 $(".dynamic-field").remove();
+        //                 $('#addUserModal .text-danger').text('');
+        //                 $('#addUserModal').modal('show');
+        //                 $('#userId').val(user.id);
+        //                 $('#name').val(user.name);
+        //                 $('#email').val(user.email);
+        //                 $('#mobile').val(user.mobile);
+        //                 $('#password').val(user.password);
+        //                 $('#userSubmit').text('Update');
+        //                 $('.modal-title').html('<strong>Edit The User</strong>');
+        //             } else {
+        //                 console.error('Invalid response structure:', response);
+        //             }
+        //         },
+        //         error: function(error) {
+        //             console.error('Error fetching user:', error);
+        //         }
+        //     });
+        // });
 
         $(document).on('click', '.show-info', function() {
             var userId = $(this).data('user-id'); // Getting user id from data attribute

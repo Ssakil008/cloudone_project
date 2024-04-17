@@ -75,13 +75,18 @@ class ViewController extends Controller
                 $menuIdToCheck = $menu->id;
 
                 // Check if a permission exists for the role and the specified menu ID
-                $permissionExists = Permission::where('role_id', $roleId)
+                $permissions = Permission::where('role_id', $roleId)
                     ->where('menu_id', $menuIdToCheck)
-                    ->exists();
+                    ->first();
 
-                if ($permissionExists) {
-                    // If the permission exists for the role and the menu ID, you can proceed
-                    return view($viewName, ['menuId' => $menu->id]);
+                if ($permissions) {
+                    // If permissions exist for the role and the menu ID, pass permission data to the view
+                    return view($viewName, [
+                        'menuId' => $menu->id,
+                        'createPermission' => $permissions->create,
+                        'editPermission' => $permissions->edit,
+                        'deletePermission' => $permissions->delete,
+                    ]);
                 } else {
                     return redirect()->intended(route('dashboard'));
                 }

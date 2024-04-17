@@ -11,10 +11,12 @@
     <div class="content-body">
         <div class="row">
             <div class="col-lg-12 my-1">
+                @if ($createPermission == 'yes')
                 <div class="d-flex justify-content-between">
                     <button type="button" id="addNewBtn" class="btn btn-info btn-sm"><i class="icon-plus"></i> New Role</button>
                     <button type="button" id="addNewPermission" class="btn btn-info btn-sm" disabled><i class="fa fa-pencil-square-o"></i> Add Permission</button>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -55,11 +57,16 @@
                                 <thead>
                                     <tr>
                                         <th>Menu</th>
-                                        <th>Read</th>
-                                        <th>Create</th>
+                                        <th>Can Read</th>
+                                        <th>Can Create</th>
+                                        <th>Can Edit</th>
+                                        <th>Can Delete</th>
+                                        @if ($editPermission == 'yes')
                                         <th>Edit</th>
+                                        @endif
+                                        @if ($deletePermission == 'yes')
                                         <th>Delete</th>
-                                        <th>Action</th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -73,6 +80,10 @@
         </div>
 
     </div>
+
+    <!--start overlay-->
+    <div class="overlay toggle-menu"></div>
+    <!--end overlay-->
 </div>
 
 <!-- New Role Modal -->
@@ -186,6 +197,8 @@
             var buttonClicked = $(this).attr('id');
             var roleId = $(this).data('role-id');
             console.log(roleId, buttonClicked);
+            var permissionId = $(this).data('permission-id');
+            console.log(permissionId);
             if (buttonClicked === 'addNewBtn' || buttonClicked === 'addNewPermission') {
                 var action = 'create';
             } else {
@@ -232,7 +245,33 @@
                                 }
                             });
                         } else if (buttonClicked === 'permission-edit-btn') {
-                            $('#permissionModal').modal('show');
+                            $.ajax({
+                                type: 'GET',
+                                url: '{{ url("getPermissionData") }}/' + permissionId,
+                                success: function(response) {
+                                    console.log(response);
+                                    if (response.hasOwnProperty('data')) {
+                                        var permission = response.data;
+                                        $('#permissionForm')[0].reset();
+                                        $('#permissionModal .text-danger').text('');
+                                        $('#permissionModal').modal('show');
+                                        $('#permissionId').val(permission.id);
+                                        $('#role_id').val(permission.role_id);
+                                        $('#menu').val(permission.menu_id);
+                                        $('#readCheckbox').prop('checked', permission.read === 'yes');
+                                        $('#createCheckbox').prop('checked', permission.create === 'yes');
+                                        $('#editCheckbox').prop('checked', permission.edit === 'yes');
+                                        $('#deleteCheckbox').prop('checked', permission.delete === 'yes');
+                                        $('#permissionSubmit').text('Update');
+                                        $('.modal-title').html('<strong>Edit The Permission</strong>');
+                                    } else {
+                                        console.error('Invalid response structure:', response);
+                                    }
+                                },
+                                error: function(error) {
+                                    console.error('Error fetching permission:', error);
+                                }
+                            });
                         }
                     } else {
                         // Permission denied, show a message or handle it as needed
@@ -313,6 +352,9 @@
 
     $(document).ready(function() {
         // Fetch roles data from the server
+        var editPermission = '{{ $editPermission }}';
+        var deletePermission = '{{ $deletePermission }}';
+
         $.ajax({
             type: 'GET',
             url: '{{ route("getAllRoleData") }}',
@@ -328,11 +370,22 @@
                             '<td>' + serialNumber + '</td>' +
                             '<td>' + role.role + '</td>' +
                             '<td>' + role.description + '</td>' +
-                            '<td>' +
-                            '<i class="icon-lock-open mr-2 permission-btn align-middle text-success" data-role-id="' + role.id + '"></i>' +
-                            '<i class="icon-note mr-2 align-middle text-info" id="role-edit-btn" data-role-id="' + role.id + '"></i>' +
-                            '<i class="fa fa-trash-o role-delete-btn align-middle text-danger" data-role-id="' + role.id + '"></i>' +
-                            '</td>' +
+                            '<td>';
+
+                        // Add permission icon
+                        row += '<i class="icon-lock-open mr-2 permission-btn align-middle text-success" data-role-id="' + role.id + '"></i>';
+
+                        // Conditionally add edit icon
+                        if (editPermission === 'yes') {
+                            row += '<i class="icon-note mr-2 align-middle text-info" id="role-edit-btn" data-role-id="' + role.id + '"></i>';
+                        }
+
+                        // Conditionally add delete icon
+                        if (deletePermission === 'yes') {
+                            row += '<i class="fa fa-trash-o role-delete-btn align-middle text-danger" data-role-id="' + role.id + '"></i>';
+                        }
+
+                        row += '</td>' +
                             '</tr>';
 
                         $('#roles-table tbody').append(row);
@@ -346,6 +399,7 @@
                 console.error('Error fetching roles:', error);
             }
         });
+
 
         // $('#roles-table').on('click', '.role-edit-btn', function() {
         //     var roleId = $(this).data('role-id');
@@ -426,6 +480,8 @@
 
     $(document).ready(function() {
         var roleId = null;
+        var editPermission = '{{ $editPermission }}';
+        var deletePermission = '{{ $deletePermission }}';
 
         $(document).on('click', '.permission-btn', function() {
             // Enable the permission button
@@ -457,12 +513,22 @@
                                 '<td>' + permission.read + '</td>' +
                                 '<td>' + permission.create + '</td>' +
                                 '<td>' + permission.edit + '</td>' +
-                                '<td>' + permission.delete + '</td>' +
-                                '<td>' +
-                                '<i class="icon-note mr-2 align-middle text-info" id="permission-edit-btn" data-permission-id="' + permission.id + '"></i>' +
-                                '<i class="fa fa-trash-o permission-delete-btn align-middle text-danger" data-permission-id="' + permission.id + '"></i>' +
-                                '</td>' +
-                                '</tr>';
+                                '<td>' + permission.delete + '</td>';
+
+                            // Conditionally add edit and delete icons based on permission
+                            if (editPermission === 'yes') {
+                                row += '<td>' +
+                                    '<i class="icon-note mr-2 align-middle text-info" id="permission-edit-btn" data-permission-id="' + permission.id + '"></i>' +
+                                    '</td>';
+                            }
+
+                            if (deletePermission === 'yes') {
+                                row += '<td>' +
+                                    '<i class="fa fa-trash-o permission-delete-btn align-middle text-danger" data-permission-id="' + permission.id + '"></i>' +
+                                    '</td>';
+                            }
+
+                            row += '</tr>';
 
                             $('#permission-table tbody').append(row);
                         });
@@ -538,38 +604,38 @@
             });
         });
 
-        $('#permission-table').on('click', '.permission-edit-btn', function() {
-            var permissionId = $(this).data('permission-id');
-            console.log(permissionId);
+        // $('#permission-table').on('click', '.permission-edit-btn', function() {
+        //     var permissionId = $(this).data('permission-id');
+        //     console.log(permissionId);
 
-            $.ajax({
-                type: 'GET',
-                url: '{{ url("getPermissionData") }}/' + permissionId,
-                success: function(response) {
-                    console.log(response);
-                    if (response.hasOwnProperty('data')) {
-                        var permission = response.data;
-                        $('#permissionForm')[0].reset();
-                        $('#permissionModal .text-danger').text('');
-                        $('#permissionModal').modal('show');
-                        $('#permissionId').val(permission.id);
-                        $('#role_id').val(permission.role_id);
-                        $('#menu').val(permission.menu_id);
-                        $('#readCheckbox').prop('checked', permission.read === 'yes');
-                        $('#createCheckbox').prop('checked', permission.create === 'yes');
-                        $('#editCheckbox').prop('checked', permission.edit === 'yes');
-                        $('#deleteCheckbox').prop('checked', permission.delete === 'yes');
-                        $('#permissionSubmit').text('Update');
-                        $('.modal-title').html('<strong>Edit The Permission</strong>');
-                    } else {
-                        console.error('Invalid response structure:', response);
-                    }
-                },
-                error: function(error) {
-                    console.error('Error fetching permission:', error);
-                }
-            });
-        });
+        //     $.ajax({
+        //         type: 'GET',
+        //         url: '{{ url("getPermissionData") }}/' + permissionId,
+        //         success: function(response) {
+        //             console.log(response);
+        //             if (response.hasOwnProperty('data')) {
+        //                 var permission = response.data;
+        //                 $('#permissionForm')[0].reset();
+        //                 $('#permissionModal .text-danger').text('');
+        //                 $('#permissionModal').modal('show');
+        //                 $('#permissionId').val(permission.id);
+        //                 $('#role_id').val(permission.role_id);
+        //                 $('#menu').val(permission.menu_id);
+        //                 $('#readCheckbox').prop('checked', permission.read === 'yes');
+        //                 $('#createCheckbox').prop('checked', permission.create === 'yes');
+        //                 $('#editCheckbox').prop('checked', permission.edit === 'yes');
+        //                 $('#deleteCheckbox').prop('checked', permission.delete === 'yes');
+        //                 $('#permissionSubmit').text('Update');
+        //                 $('.modal-title').html('<strong>Edit The Permission</strong>');
+        //             } else {
+        //                 console.error('Invalid response structure:', response);
+        //             }
+        //         },
+        //         error: function(error) {
+        //             console.error('Error fetching permission:', error);
+        //         }
+        //     });
+        // });
 
 
         $('#permission-table').on('click', '.permission-delete-btn', function() {

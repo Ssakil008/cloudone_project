@@ -1,5 +1,23 @@
 <script>
     $(document).ready(function() {
+
+        function filterMenuItems() {
+            var searchInput = document.getElementById('searchInput').value.toLowerCase();
+            var menuItems = document.querySelectorAll('#sidebarMenu li');
+
+            menuItems.forEach(function(item) {
+                var menuItemText = item.textContent.toLowerCase();
+                if (menuItemText.includes(searchInput)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Event listener for search input
+        document.getElementById('searchInput').addEventListener('input', filterMenuItems);
+
         function validateMobileNumber(mobileNumber) {
             var regex = /^(\+?8801|01)[1-9]\d{8}$/;
             return regex.test(mobileNumber);

@@ -40,7 +40,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/upsertCredential', [UpsertController::class, 'upsertCredential'])->name('upsertCredential');
     Route::post('/upsertRole', [UpsertController::class, 'upsertRole'])->name('upsertRole');
     Route::post('/checkPermission', [UpsertController::class, 'checkPermission'])->name('checkPermission');
-    Route::post('/insertPermission', [UserController::class, 'insertPermission'])->name('insertPermission');
+    Route::post('/insertPermission', [UpsertController::class, 'insertPermission'])->name('insertPermission');
     Route::get('/get-entries', [UserController::class, 'getEntries'])->name('get-entries');
     Route::get('/getAllRoleData', [UserController::class, 'getAllRoleData'])->name('getAllRoleData');
     Route::get('/getAllUserData', [UserController::class, 'getAllUserData'])->name('getAllUserData');

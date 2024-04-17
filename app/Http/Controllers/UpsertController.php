@@ -177,7 +177,52 @@ class UpsertController extends Controller
         }
     }
 
-    public function UpsertController(Request $request)
+    public function insertPermission(Request $request)
+    {
+        $validatedData = Validator::make($request->all(), [
+            'role_id' => 'required|integer',
+            'menu' => 'required|string',
+            'read' => 'nullable|string',
+            'create' => 'nullable|string',
+            'edit' => 'nullable|string',
+            'delete' => 'nullable|string',
+        ]);
+
+        if ($validatedData->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed']);
+        }
+
+        $id = $request->input('permissionId');
+
+        if (empty($id)) {
+            // Insertion
+            $rolePermission = new Permission();
+        } else {
+            // Update
+            $rolePermission = Permission::find($id);
+            if (!$rolePermission) {
+                return response()->json(['success' => false, 'message' => 'Role permission not found']);
+            }
+        }
+
+        // Update the role permission attributes
+        $rolePermission->role_id = $request->input('role_id');
+        $rolePermission->menu_id = $request->input('menu');
+        $rolePermission->read = $request->input('read') ?? 'no';
+        $rolePermission->create = $request->input('create') ?? 'no';
+        $rolePermission->edit = $request->input('edit') ?? 'no';
+        $rolePermission->delete = $request->input('delete') ?? 'no';
+
+        // Save the role permission to the database
+        if ($rolePermission->save()) {
+            return response()->json(['success' => true, 'message' => 'Permission added successfully']);
+        } else {
+            // Permission denied
+            return response()->json(['success' => false, 'message' => 'Failed to add permission']);
+        }
+    }
+
+    public function upsertCredential(Request $request)
     {
         // Retrieve the id from the request
         $id = $request->input('entryId');
@@ -264,6 +309,7 @@ class UpsertController extends Controller
         $menuId = $request->input('menuId');
         $action = $request->input('action');
         $userId = Auth::id();
+
 
         // Retrieve the user's role ID from the user_role pivot table
         $userRole = UserRole::where('user_id', $userId)->first();
