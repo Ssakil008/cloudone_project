@@ -46,6 +46,11 @@ class ViewController extends Controller
         return $this->checkPermission('user_setup', 'pages.user_setup');
     }
 
+    public function menuSetup()
+    {
+        return $this->checkPermission('menu_setup', 'pages.menu_setup');
+    }
+
     public function role()
     {
         return $this->checkPermission('role', 'pages.role');

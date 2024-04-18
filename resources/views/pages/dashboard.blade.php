@@ -632,16 +632,6 @@
 </div>
 <!--End content-wrapper-->
 
-<!--Start footer-->
-<footer class="footer">
-  <div class="container">
-    <div class="text-center">
-      Copyright © 2019 Bulona Admin
-    </div>
-  </div>
-</footer>
-<!--End footer-->
-
 <!-- Bootstrap core JavaScript -->
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/popper.min.js"></script>

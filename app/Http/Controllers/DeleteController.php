@@ -6,6 +6,7 @@ use App\Models\CredentialForServer;
 use App\Models\CredentialForUser;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Menu;
 use App\Models\Permission;
 use App\Models\UserRole;
 use Illuminate\Http\Request;
@@ -26,6 +27,11 @@ class DeleteController extends Controller
     public function deleteUserData(Request $request)
     {
         return $this->deleteData($request, User::class);
+    }
+
+    public function deleteMenuData(Request $request)
+    {
+        return $this->deleteData($request, Menu::class);
     }
 
     public function deleteRoleData(Request $request)

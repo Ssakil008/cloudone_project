@@ -92,7 +92,11 @@ class UserController extends Controller
         return DataTables::of($users)->make(true);
     }
 
-
+    public function getAllMenuData()
+    {
+        $menu = Menu::all();
+        return DataTables::of($menu)->make(true);
+    }
 
     public function getAllRoleData()
     {
@@ -134,6 +138,17 @@ class UserController extends Controller
 
         if ($user) {
             return response()->json(['data' => $user]);
+        } else {
+            return response()->json(['error' => 'Entry not found'], 404);
+        }
+    }
+
+    public function getMenuData($id)
+    {
+        $menu = Menu::find($id);
+
+        if ($menu) {
+            return response()->json(['data' => $menu]);
         } else {
             return response()->json(['error' => 'Entry not found'], 404);
         }

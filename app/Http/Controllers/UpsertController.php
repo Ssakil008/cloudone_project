@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Menu;
 use App\Models\CredentialForUser;
 use App\Models\CredentialForServer;
 use App\Models\AdditionalInformation;
@@ -69,6 +70,60 @@ class UpsertController extends Controller
 
         // return response()->json(['success' => true, 'message' => 'User added successfully']);
         return response()->json(['success' => true, 'message' => 'User ' . ($id ? 'updated' : 'added') . ' successfully']);
+    }
+
+    public function upsertMenu(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $userId = Auth::id();
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255|unique:menus,name,' . $request->input('menuId'),
+                'link' => 'required|string|min:11|unique:menus,link,' . $request->input('menuId'),
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
+            }
+
+            $id = $request->input('menuId');
+
+            if (empty($id)) {
+                // Insertion
+            $menu = new Menu();
+            $rolePermission = new Permission();
+            $menuId = $menu->id;
+            } else {
+                // Update
+                $menu = Menu::find($id);
+                if (!$menu) {
+                    return response()->json(['success' => false, 'message' => 'Id in Menu table not found']);
+                }
+            }
+
+            // Insert or update menu data
+            $menu->name = $request->name;
+            $menu->link = $request->link;
+            $menu->save();
+
+            $rolePermission->role_id = 1;
+            $rolePermission->menu_id = $menuId;
+            $rolePermission->read = 'yes';
+            $rolePermission->create = 'yes';
+            $rolePermission->edit = 'yes';
+            $rolePermission->delete = 'yes';
+
+            // Save the role permission
+            $rolePermission->save();
+
+            DB::commit();
+
+            return response()->json(['success' => true, 'message' => 'Menu ' . ($id ? 'updated' : 'added') . ' successfully']);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function storeDynamicData(Request $request)

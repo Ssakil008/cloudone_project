@@ -33,6 +33,11 @@ class UsersTableSeeder extends Seeder
             'description' => 'He / she can see every panel',
         ]);
 
+        Role::create([
+            'role' => 'User',
+            'description' => 'Only see permitted panel',
+        ]);
+
         Menu::create([
             'name' => 'Credential For Server',
             'link' => 'credential_for_server',
@@ -53,6 +58,10 @@ class UsersTableSeeder extends Seeder
             'link' => 'credential_for_user',
         ]);
 
+        Menu::create([
+            'name' => 'Menu Setup',
+            'link' => 'menu_setup',
+        ]);
 
         UserRole::create([
             'user_id' => 1,
@@ -89,6 +98,15 @@ class UsersTableSeeder extends Seeder
         Permission::create([
             'role_id' => 1,
             'menu_id' => 4,
+            'read' => 'yes',
+            'create' => 'yes',
+            'edit' => 'yes',
+            'delete' => 'yes',
+        ]);
+
+        Permission::create([
+            'role_id' => 1,
+            'menu_id' => 5,
             'read' => 'yes',
             'create' => 'yes',
             'edit' => 'yes',
