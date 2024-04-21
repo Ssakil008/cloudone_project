@@ -309,18 +309,15 @@
                                         window.location.href = '{{ route("role") }}';
                                     }, 2000);
                                 } else {
-                                    // Handle server-side errors
-                                    displayErrors(response.errors);
+                                    $('#newRoleModal').modal('hide');
+                                    showErrorModal([response.errors]);
                                 }
                             },
-                            error: function(error) {
+                            error: function(xhr, status, error) {
                                 console.error('AJAX error:', error);
                                 $('#newRoleModal').modal('hide');
-                                $('#errormessage').text('role not added');
-                                $('#errormodal').modal('show');
-                                setTimeout(function() {
-                                    $('#errormodal').modal('hide');
-                                }, 2000);
+                                var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
+                                showErrorModal([errorMessage]);
                             }
                         });
                     }
@@ -340,13 +337,6 @@
                 }
             });
             return isValid;
-        }
-
-        // Function to display errors below respective input fields
-        function displayErrors(errors) {
-            $.each(errors, function(key, value) {
-                $('#' + key + '_error').text(value);
-            });
         }
     });
 
@@ -584,21 +574,14 @@
                             }, 2000);
                         } else {
                             $('#permissionModal').modal('hide');
-                            $('#errormessage').text(response.message);
-                            $('#errormodal').modal('show');
-                            setTimeout(function() {
-                                $('#errormodal').modal('hide');
-                            }, 2000);
+                            showErrorModal([response.errors]);
                         }
                     },
-                    error: function(error) {
+                    error: function(xhr, status, error) {
                         console.error('AJAX error:', error);
                         $('#permissionModal').modal('hide');
-                        $('#errormessage').text(response.message);
-                        $('#errormodal').modal('show');
-                        setTimeout(function() {
-                            $('#errormodal').modal('hide');
-                        }, 2000);
+                        var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
+                        showErrorModal([errorMessage]);
                     }
                 });
             });

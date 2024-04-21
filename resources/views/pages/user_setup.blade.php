@@ -153,16 +153,6 @@
     });
 
     $(document).ready(function() {
-        function validateMobileNumber(mobileNumber) {
-            var regex = /^(\+?8801|01)[1-9]\d{8}$/;
-            return regex.test(mobileNumber);
-        }
-
-        function validateEmail(email) {
-            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
-        }
-
         $('#userSubmit').click(function(e) {
             var isValid = validateForm();
             if (isValid) {
@@ -221,21 +211,15 @@
                     } else {
                         // Handle server-side errors
                         $('#addUserModal').modal('hide');
-                        $('#errormessage').text(response.message);
-                        $('#errormodal').modal('show');
-                        setTimeout(function() {
-                            $('#errormodal').modal('hide');
-                        }, 3000);
+                        showErrorModal([response.errors]);
+
                     }
                 },
-                error: function(error) {
+                error: function(xhr, status, error) {
                     console.error('AJAX error:', error);
                     $('#addUserModal').modal('hide');
-                    $('#errormessage').text(response.message);
-                    $('#errormodal').modal('show');
-                    setTimeout(function() {
-                        $('#errormodal').modal('hide');
-                    }, 3000);
+                    var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
+                    showErrorModal([errorMessage]);
                 }
             });
         }

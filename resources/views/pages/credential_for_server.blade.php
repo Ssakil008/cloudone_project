@@ -66,10 +66,20 @@
                     @csrf
                     <input type="hidden" name="entryId" id="entryId">
                     <div class="form-group">
-                        <label for="credential_for">Name</label>
-                        <input type="text" id="credential_for" name="credential_for" required placeholder="Name" value="{{ old('name') }}" class="form-control input-shadow">
-                        <span class="text-danger" id="credential_for_error"></span>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <label for="credential_for">Name</label>
+                                <input type="text" id="credential_for" name="credential_for" required placeholder="Name" value="{{ old('name') }}" class="form-control input-shadow">
+                                <span class="text-danger" id="credential_for_error"></span>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <label for="username">User Name</label>
+                                <input type="text" name="username" required id="username" placeholder="User Name" value="{{old('username')}}" class="form-control input-shadow">
+                                <span class="text-danger" id="username_error"></span>
+                            </div>
+                        </div>
                     </div>
+
 
                     <div class="form-group">
                         <label for="email">Email ID</label>
@@ -94,12 +104,6 @@
                         <label for="ip_address">IP Address</label>
                         <input type="text" id="ip_address" name="ip_address" required placeholder="e.g., 192.168.1.1" value="{{old('ip_address')}}" class="form-control input-shadow">
                         <span class="text-danger" id="ip_address_error"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="username">User Name</label>
-                        <input type="text" name="username" required id="username" placeholder="User Name" value="{{old('username')}}" class="form-control input-shadow">
-                        <span class="text-danger" id="username_error"></span>
                     </div>
 
                     <div class="form-group">
@@ -233,25 +237,6 @@
     });
 
     $(document).ready(function() {
-        function validateMobileNumber(mobileNumber) {
-            var regex = /^(\+?8801|01)[1-9]\d{8}$/;
-            return regex.test(mobileNumber);
-        }
-
-        function validateWebsite(website) {
-            try {
-                new URL(website);
-                return true;
-            } catch (error) {
-                return false;
-            }
-        }
-
-        function validateEmail(email) {
-            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
-        }
-
         $('#submitBtn').click(function(e) {
             var isValid = validateForm();
             if (isValid) {
@@ -303,18 +288,15 @@
                                         window.location.href = '{{ route("credential_for_server") }}';
                                     }, 2000);
                                 } else {
-                                    // Handle server-side errors
-                                    displayErrors(response.errors);
+                                    $('#myModal').modal('hide');
+                                    showErrorModal([response.errors]);
                                 }
                             },
-                            error: function(error) {
+                            error: function(xhr, status, error) {
                                 console.error('AJAX error:', error);
                                 $('#myModal').modal('hide');
-                                $('#errormessage').text('User not added');
-                                $('#errormodal').modal('show');
-                                setTimeout(function() {
-                                    $('#errormodal').modal('hide');
-                                }, 2000);
+                                var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
+                                showErrorModal([errorMessage]);
                             }
                         });
                     }
@@ -334,13 +316,6 @@
                 }
             });
             return isValid;
-        }
-
-        // Function to display errors below respective input fields
-        function displayErrors(errors) {
-            $.each(errors, function(key, value) {
-                $('#' + key + '_error').text(value);
-            });
         }
     });
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -21,55 +22,60 @@ class UpsertController extends Controller
 {
     public function upsertUser(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            // 'email' => 'required|string|email|max:255|unique:users',
-            // 'mobile' => 'required|string|min:11|unique:users',
-            // 'password' => 'required|string|min:8',
-            'username' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $request->input('userId'),
-            'mobile' => 'required|string|min:11|unique:users,mobile,' . $request->input('userId'),
-            'password' => $request->filled('userId') ? 'nullable|string|min:8' : 'required|string|min:8',
-            'roleId' => 'exists:roles,id', // Add validation for roleId
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                // 'email' => 'required|string|email|max:255|unique:users',
+                // 'mobile' => 'required|string|min:11|unique:users',
+                // 'password' => 'required|string|min:8',
+                'username' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $request->input('userId'),
+                'mobile' => 'required|string|min:11|unique:users,mobile,' . $request->input('userId'),
+                'password' => $request->filled('userId') ? 'nullable|string|min:8' : 'required|string|min:8',
+                'roleId' => 'exists:roles,id', // Add validation for roleId
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => 'Empty Field or Duplicate Email/Mobile']);
-        }
-
-        $id = $request->input('userId');
-
-        if (empty($id)) {
-            // Insertion
-            $user = new User();
-        } else {
-            // Update
-            $user = User::find($id);
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'User Id not found']);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
             }
-        }
 
-        // Insert into users table
-        $user->username = $request->username;
-        $user->email = $request->email;
-        $user->mobile = $request->mobile;
-        // $user->password = Hash::make($request->password);
-        // Update the password only if provided
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-        }
-        $user->save();
+            $id = $request->input('userId');
 
-        if (!empty($id)) {
-            // If userId exists, update the user_role record
-            $user->roles()->sync($request->roleId); // Update existing role
-        } else {
-            // If userId does not exist, attach the role to the user
-            $user->roles()->attach($request->roleId);
-        }
+            if (empty($id)) {
+                // Insertion
+                $user = new User();
+            } else {
+                // Update
+                $user = User::find($id);
+                if (!$user) {
+                    return response()->json(['success' => false, 'message' => 'User Id not found']);
+                }
+            }
 
-        // return response()->json(['success' => true, 'message' => 'User added successfully']);
-        return response()->json(['success' => true, 'message' => 'User ' . ($id ? 'updated' : 'added') . ' successfully']);
+            // Insert into users table
+            $user->username = $request->username;
+            $user->email = $request->email;
+            $user->mobile = $request->mobile;
+            // $user->password = Hash::make($request->password);
+            // Update the password only if provided
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
+            $user->save();
+
+            if (!empty($id)) {
+                // If userId exists, update the user_role record
+                $user->roles()->sync($request->roleId); // Update existing role
+            } else {
+                // If userId does not exist, attach the role to the user
+                $user->roles()->attach($request->roleId);
+            }
+
+            // return response()->json(['success' => true, 'message' => 'User added successfully']);
+            return response()->json(['success' => true, 'message' => 'User ' . ($id ? 'updated' : 'added') . ' successfully']);
+        } catch (Exception $e) {
+            // Handle the exception
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function upsertMenu(Request $request)
@@ -77,10 +83,9 @@ class UpsertController extends Controller
         DB::beginTransaction();
 
         try {
-            $userId = Auth::id();
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:menus,name,' . $request->input('menuId'),
-                'link' => 'required|string|min:11|unique:menus,link,' . $request->input('menuId'),
+                'link' => 'required|string|max:255|unique:menus,link,' . $request->input('menuId'),
             ]);
 
             if ($validator->fails()) {
@@ -91,36 +96,38 @@ class UpsertController extends Controller
 
             if (empty($id)) {
                 // Insertion
-            $menu = new Menu();
-            $rolePermission = new Permission();
-            $menuId = $menu->id;
+                $menu = new Menu();
+                $rolePermission = new Permission();
+                $menu->name = $request->name;
+                $menu->link = $request->link;
+                $menu->save();
+
+                $menuId = $menu->id;
+                $rolePermission->role_id = 1;
+                $rolePermission->menu_id = $menuId;
+                $rolePermission->read = 'yes';
+                $rolePermission->create = 'yes';
+                $rolePermission->edit = 'yes';
+                $rolePermission->delete = 'yes';
+
+                // Save the role permission
+                $rolePermission->save();
             } else {
                 // Update
                 $menu = Menu::find($id);
                 if (!$menu) {
                     return response()->json(['success' => false, 'message' => 'Id in Menu table not found']);
                 }
+
+                $menu->name = $request->name;
+                $menu->link = $request->link;
+                $menu->save();
             }
-
-            // Insert or update menu data
-            $menu->name = $request->name;
-            $menu->link = $request->link;
-            $menu->save();
-
-            $rolePermission->role_id = 1;
-            $rolePermission->menu_id = $menuId;
-            $rolePermission->read = 'yes';
-            $rolePermission->create = 'yes';
-            $rolePermission->edit = 'yes';
-            $rolePermission->delete = 'yes';
-
-            // Save the role permission
-            $rolePermission->save();
 
             DB::commit();
 
             return response()->json(['success' => true, 'message' => 'Menu ' . ($id ? 'updated' : 'added') . ' successfully']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollback();
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -192,170 +199,194 @@ class UpsertController extends Controller
 
     public function upsertRole(Request $request)
     {
-        // Retrieve the id from the request
-        $id = $request->input('roleId');
-        $validator = Validator::make($request->all(), [
-            'role' => 'required|string|max:255|unique:roles,role,' . $id,
-            'description' => 'required|string|max:255',
-        ]);
+        try {
+            // Retrieve the id from the request
+            $id = $request->input('roleId');
+            $validator = Validator::make($request->all(), [
+                'role' => 'required|string|max:255|unique:roles,role,' . $id,
+                'description' => 'required|string|max:255',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
-        }
-
-        if (empty($id)) {
-            // Insertion
-            $role = new Role();
-            $role->role = $request->role;
-            $role->description = $request->description;
-            $roleResult = $role->save();
-
-            // Return response for insertion
-            if ($roleResult) {
-                return response()->json(['success' => true, 'message' => 'Role added successfully.']);
-            } else {
-                return response()->json(['success' => false, 'fail' => 'Failed to add role.']);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
             }
-        } else {
-            // Update
-            $role = Role::find($id);
-            $role->role = $request->role;
-            $role->description = $request->description;
-            $roleResult = $role->save();
 
-            // Return response for update
-            if ($roleResult) {
-                return response()->json(['success' => true, 'message' => 'Role updated successfully.']);
+            if (empty($id)) {
+                // Insertion
+                $role = new Role();
+                $role->role = $request->role;
+                $role->description = $request->description;
+                $roleResult = $role->save();
+
+                // Return response for insertion
+                if ($roleResult) {
+                    return response()->json(['success' => true, 'message' => 'Role added successfully.']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Failed to add role.']);
+                }
             } else {
-                return response()->json(['success' => false, 'fail' => 'Failed to update role.']);
+                // Update
+                $role = Role::find($id);
+                $role->role = $request->role;
+                $role->description = $request->description;
+                $roleResult = $role->save();
+
+                // Return response for update
+                if ($roleResult) {
+                    return response()->json(['success' => true, 'message' => 'Role updated successfully.']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Failed to update role.']);
+                }
             }
+        } catch (Exception $e) {
+            // Handle the exception
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
     public function insertPermission(Request $request)
     {
-        $validatedData = Validator::make($request->all(), [
-            'role_id' => 'required|integer',
-            'menu' => 'required|string',
-            'read' => 'nullable|string',
-            'create' => 'nullable|string',
-            'edit' => 'nullable|string',
-            'delete' => 'nullable|string',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'role_id' => 'required|integer',
+                'menu' => 'required|string',
+                'read' => 'nullable|string',
+                'create' => 'nullable|string',
+                'edit' => 'nullable|string',
+                'delete' => 'nullable|string',
+            ]);
 
-        if ($validatedData->fails()) {
-            return response()->json(['success' => false, 'message' => 'Validation failed']);
-        }
+            $validator->after(function ($validator) use ($request) {
+                $roleId = $request->input('role_id');
+                $menuId = $request->input('menu');
 
-        $id = $request->input('permissionId');
+                if (Permission::where('role_id', $roleId)->where('menu_id', $menuId)->exists()) {
+                    $validator->errors()->add('role_id', 'The menu for the role already exists.');
+                }
+            });
 
-        if (empty($id)) {
-            // Insertion
-            $rolePermission = new Permission();
-        } else {
-            // Update
-            $rolePermission = Permission::find($id);
-            if (!$rolePermission) {
-                return response()->json(['success' => false, 'message' => 'Role permission not found']);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
             }
-        }
 
-        // Update the role permission attributes
-        $rolePermission->role_id = $request->input('role_id');
-        $rolePermission->menu_id = $request->input('menu');
-        $rolePermission->read = $request->input('read') ?? 'no';
-        $rolePermission->create = $request->input('create') ?? 'no';
-        $rolePermission->edit = $request->input('edit') ?? 'no';
-        $rolePermission->delete = $request->input('delete') ?? 'no';
+            $id = $request->input('permissionId');
 
-        // Save the role permission to the database
-        if ($rolePermission->save()) {
-            return response()->json(['success' => true, 'message' => 'Permission added successfully']);
-        } else {
-            // Permission denied
-            return response()->json(['success' => false, 'message' => 'Failed to add permission']);
+            if (empty($id)) {
+                // Insertion
+                $rolePermission = new Permission();
+            } else {
+                // Update
+                $rolePermission = Permission::find($id);
+                if (!$rolePermission) {
+                    return response()->json(['success' => false, 'message' => 'Role permission not found']);
+                }
+            }
+
+            // Update the role permission attributes
+            $rolePermission->role_id = $request->input('role_id');
+            $rolePermission->menu_id = $request->input('menu');
+            $rolePermission->read = $request->input('read') ?? 'no';
+            $rolePermission->create = $request->input('create') ?? 'no';
+            $rolePermission->edit = $request->input('edit') ?? 'no';
+            $rolePermission->delete = $request->input('delete') ?? 'no';
+
+            // Save the role permission to the database
+            if ($rolePermission->save()) {
+                return response()->json(['success' => true, 'message' => 'Permission added successfully']);
+            } else {
+                // Permission denied
+                return response()->json(['success' => false, 'message' => 'Failed to add permission']);
+            }
+        } catch (Exception $e) {
+            // Handle the exception
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
     public function upsertCredential(Request $request)
     {
-        // Retrieve the id from the request
-        $id = $request->input('entryId');
+        try {
+            // Retrieve the id from the request
+            $id = $request->input('entryId');
 
-        $rules = [
-            'credential_for' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
-            'mobile' => 'required|string|min:11',
-            'url' => 'required|string|url',
-            'ip_address' => 'required|ip',
-            'username' => 'required|string',
-            'password' => 'required|string|min:8',
-        ];
+            $rules = [
+                'credential_for' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255',
+                'mobile' => 'required|string|min:11',
+                'url' => 'required|string|url',
+                'ip_address' => 'required|ip',
+                'username' => 'required|string',
+                'password' => 'required|string|min:8',
+            ];
 
-        // Add unique validation rules with exceptions for updates
-        if (empty($id)) {
-            // For insertions, no need to exclude any IDs
-            $rules['email'] .= '|unique:credential_for_servers';
-            $rules['mobile'] .= '|unique:credential_for_servers';
-        } else {
-            // For updates, exclude the current entry's ID from the unique check
-            $rules['email'] .= '|unique:credential_for_servers,email,' . $id;
-            $rules['mobile'] .= '|unique:credential_for_servers,mobile,' . $id;
-        }
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()->toArray()], 422);
-        }
-
-        // Check if id is empty to determine if it's an insert or update
-        if (empty($id)) {
-            // // Insertion
-            // $user = new User();
-            // $user->email = $request->email;
-            // $user->mobile = $request->mobile;
-            // $user->password = Hash::make($request->password);
-            // $userResult = $user->save();
-
-            $entry = new CredentialForServer();
-            $entry->credential_for = $request->credential_for;
-            $entry->email = $request->email;
-            $entry->mobile = $request->mobile;
-            $entry->url = $request->url;
-            $entry->ip_address = $request->ip_address;
-            $entry->username = $request->username;
-            $entry->password = $request->password;
-            $entryResult = $entry->save();
-
-            if ($entryResult) {
-                return response()->json(['success' => true, 'message' => 'New entry added successfully.']);
+            // Add unique validation rules with exceptions for updates
+            if (empty($id)) {
+                // For insertions, no need to exclude any IDs
+                $rules['email'] .= '|unique:credential_for_servers';
+                $rules['mobile'] .= '|unique:credential_for_servers';
             } else {
-                return response()->json(['success' => false, 'fail' => 'Failed to add new entry.']);
+                // For updates, exclude the current entry's ID from the unique check
+                $rules['email'] .= '|unique:credential_for_servers,email,' . $id;
+                $rules['mobile'] .= '|unique:credential_for_servers,mobile,' . $id;
             }
-        } else {
-            // // Update
-            // $user = User::find($id);
-            // $user->email = $request->email;
-            // $user->mobile = $request->mobile;
-            // $user->password = Hash::make($request->password);
-            // $userResult = $user->save();
 
-            $entry = CredentialForServer::find($id);
-            $entry->credential_for = $request->credential_for;
-            $entry->email = $request->email;
-            $entry->mobile = $request->mobile;
-            $entry->url = $request->url;
-            $entry->ip_address = $request->ip_address;
-            $entry->username = $request->username;
-            $entry->password = $request->password;
-            $entryResult = $entry->save();
+            $validator = Validator::make($request->all(), $rules);
 
-            if ($entryResult) {
-                return response()->json(['success' => true, 'message' => 'Entry updated successfully.']);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
+            }
+
+            // Check if id is empty to determine if it's an insert or update
+            if (empty($id)) {
+                // // Insertion
+                // $user = new User();
+                // $user->email = $request->email;
+                // $user->mobile = $request->mobile;
+                // $user->password = Hash::make($request->password);
+                // $userResult = $user->save();
+
+                $entry = new CredentialForServer();
+                $entry->credential_for = $request->credential_for;
+                $entry->email = $request->email;
+                $entry->mobile = $request->mobile;
+                $entry->url = $request->url;
+                $entry->ip_address = $request->ip_address;
+                $entry->username = $request->username;
+                $entry->password = $request->password;
+                $entryResult = $entry->save();
+
+                if ($entryResult) {
+                    return response()->json(['success' => true, 'message' => 'New entry added successfully.']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Failed to add new entry.']);
+                }
             } else {
-                return response()->json(['success' => false, 'fail' => 'Failed to update entry.']);
+                // // Update
+                // $user = User::find($id);
+                // $user->email = $request->email;
+                // $user->mobile = $request->mobile;
+                // $user->password = Hash::make($request->password);
+                // $userResult = $user->save();
+
+                $entry = CredentialForServer::find($id);
+                $entry->credential_for = $request->credential_for;
+                $entry->email = $request->email;
+                $entry->mobile = $request->mobile;
+                $entry->url = $request->url;
+                $entry->ip_address = $request->ip_address;
+                $entry->username = $request->username;
+                $entry->password = $request->password;
+                $entryResult = $entry->save();
+
+                if ($entryResult) {
+                    return response()->json(['success' => true, 'message' => 'Entry updated successfully.']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Failed to update entry.']);
+                }
             }
+        } catch (Exception $e) {
+            // Handle the exception
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 

@@ -24,7 +24,7 @@
                     <tr>
                         <th>Serial No</th>
                         <th>Menu Name</th>
-                        <th>Menu LInk</th>
+                        <th>Menu Link</th>
                         @if ($editPermission == 'yes')
                         <th>Edit</th>
                         @endif
@@ -167,21 +167,14 @@
                     } else {
                         // Handle server-side errors
                         $('#addMenuModal').modal('hide');
-                        $('#errormessage').text(response.message);
-                        $('#errormodal').modal('show');
-                        setTimeout(function() {
-                            $('#errormodal').modal('hide');
-                        }, 3000);
+                        showErrorModal(response.errors);
                     }
                 },
-                error: function(error) {
+                error: function(xhr, status, error) {
                     console.error('AJAX error:', error);
                     $('#addMenuModal').modal('hide');
-                    $('#errormessage').text(response.message);
-                    $('#errormodal').modal('show');
-                    setTimeout(function() {
-                        $('#errormodal').modal('hide');
-                    }, 3000);
+                    var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
+                    showErrorModal([errorMessage]);
                 }
             });
         }

@@ -173,6 +173,31 @@
    <!-- Add this script at the end of your HTML file, before </body> -->
    <script>
       $(document).ready(function() {
+
+         function showErrorModal(messages) {
+            console.log(messages);
+            var errorModal = $('#errormodal');
+            var errorMessagesDiv = errorModal.find('#errormessage');
+
+            // Clear existing error messages
+            errorMessagesDiv.empty();
+
+            // Append new error messages
+            messages.forEach(function(message) {
+               console.log(message);
+
+               errorMessagesDiv.append('<p>' + message + '</p>');
+            });
+
+            // Show the modal
+            errorModal.modal('show');
+
+            // Close error modal after 3 seconds
+            setTimeout(function() {
+               errorModal.modal('hide');
+            }, 3000);
+         }
+
          // Set up jQuery to include the CSRF token in all AJAX requests
          $.ajaxSetup({
             headers: {
@@ -213,20 +238,14 @@
                               }, 1000);
                               autoLoginAndRedirect($('#email').val(), $('#password').val());
                            } else {
-                              $('#errormessage').text('Registration Failed');
-                              $('#errormodal').modal('show');
-                              setTimeout(function() {
-                                 $('#errormodal').modal('hide');
-                              }, 2000);
+                              // Handle server-side errors
+                              showErrorModal([response.errors]);
                            }
                         },
-                        error: function(error) {
-                           console.log('Error:', error);
-                           $('#errormessage').text('Registration Failed');
-                           $('#errormodal').modal('show');
-                           setTimeout(function() {
-                              $('#errormodal').modal('hide');
-                           }, 2000);
+                        error: function(xhr, status, error) {
+                           console.error('AJAX error:', error);
+                           var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
+                           showErrorModal([errorMessage]);
                         }
                      });
                   } else {

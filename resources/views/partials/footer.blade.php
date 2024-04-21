@@ -1,4 +1,47 @@
 <script>
+    function showErrorModal(messages) {
+        console.log(messages);
+        var errorModal = $('#errormodal');
+        var errorMessagesDiv = errorModal.find('#errormessage');
+
+        // Clear existing error messages
+        errorMessagesDiv.empty();
+
+        // Append new error messages
+        messages.forEach(function(message) {
+            console.log(message);
+
+            errorMessagesDiv.append('<p>' + message + '</p>');
+        });
+
+        // Show the modal
+        errorModal.modal('show');
+
+        // Close error modal after 3 seconds
+        setTimeout(function() {
+            errorModal.modal('hide');
+        }, 3000);
+    }
+
+    function validateMobileNumber(mobileNumber) {
+        var regex = /^(\+?8801|01)[1-9]\d{8}$/;
+        return regex.test(mobileNumber);
+    }
+
+    function validateWebsite(website) {
+        try {
+            new URL(website);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function validateEmail(email) {
+        var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
     $(document).ready(function() {
 
         function filterMenuItems() {

@@ -12,7 +12,7 @@
             </div>
             @if ($createPermission == 'yes')
             <div class="col-lg-3 col-md-3 col-sm-3 text-right">
-                <button type="button" id="addNewBtn" class="btn btn-primary btn-sm">Add New User</button>
+                <button type="button" id="addNewBtn" class="btn btn-primary btn-sm">Add Credential</button>
             </div>
             @endif
         </div>
@@ -168,7 +168,7 @@
             $('#dynamicForm')[0].reset();
             $(".dynamic-field").remove();
             $('#userSubmit').text('Submit');
-            $('.modal-title').html('<strong>Add New User</strong>');
+            $('.modal-title').html('<strong>Add Credential</strong>');
             $('#addUserModal .text-danger').text('');
         });
 
@@ -214,7 +214,7 @@
                                         $('#mobile').val(user.mobile);
                                         $('#password').val(user.password);
                                         $('#userSubmit').text('Update');
-                                        $('.modal-title').html('<strong>Edit The User</strong>');
+                                        $('.modal-title').html('<strong>Edit The Credential</strong>');
                                     } else {
                                         console.error('Invalid response structure:', response);
                                     }
@@ -265,21 +265,11 @@
 
             // Append the "Field Name" and "Field Value" input fields to the new row
             newRow.append($('<div class="form-group col-md-6">').append('<label>Additional Field</label>').append(fieldNameInput));
-            newRow.append($('<div class="form-group col-md-6" style="margin: 30px 0px;">').append(fieldValueInput));
+            newRow.append($('<div class="form-group col-md-6" style="margin: 25px 0px;">').append(fieldValueInput));
 
             // Insert the new row before the "Add Field" button
             $("#addField").before(newRow);
         });
-
-        function validateMobileNumber(mobileNumber) {
-            var regex = /^(\+?8801|01)[1-9]\d{8}$/;
-            return regex.test(mobileNumber);
-        }
-
-        function validateEmail(email) {
-            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
-        }
 
         $("#userSubmit").click(function(e) {
             var isValid = validateForm();
@@ -525,7 +515,7 @@
         //                 $('#mobile').val(user.mobile);
         //                 $('#password').val(user.password);
         //                 $('#userSubmit').text('Update');
-        //                 $('.modal-title').html('<strong>Edit The User</strong>');
+        //                 $('.modal-title').html('<strong>Edit The Credential</strong>');
         //             } else {
         //                 console.error('Invalid response structure:', response);
         //             }

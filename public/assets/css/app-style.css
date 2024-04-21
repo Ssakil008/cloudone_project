@@ -3039,7 +3039,7 @@ label {
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
 }
 
 /* Forms */
@@ -3121,7 +3121,7 @@ label {
 }
 
 .has-icon-right .form-control {
-    padding-right: 37px;
+    padding: 7px;
 }
 
 form .form-header {
@@ -3261,8 +3261,8 @@ table.grid td {
     font-size: 0.72rem;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    /* letter-spacing: 1px;
+    text-transform: uppercase; */
     border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 .table-bordered {
