@@ -50,68 +50,98 @@ class UserController extends Controller
     //         ->make(true); // Enable server-side processing
     // }
 
-    public function getEntries()
+    public function getEntries(Request $request)
     {
-        $queries = CredentialForServer::query()->get();
+        $menuId = $request->input('menuId');
 
-        // DataTables expects specific JSON response structure
-        $data = [];
-        foreach ($queries as $query) {
-            $data[] = [
-                'id' => $query->id,
-                'credential_for' => $query->credential_for,
-                'email' => $query->email, // Access user email through relationship
-                'mobile' => $query->mobile,
-                'url' => $query->url,
-                'ip_address' => $query->ip_address,
-                'username' => $query->username,
-                'password' => $query->password,
-                // Add other columns as needed
-            ];
-        }
+        if ($this->checkPermissions($menuId)) {
+            $queries = CredentialForServer::query()->get();
 
-        return DataTables::of($data)->make(true);
-    }
-
-
-    public function getAllUserData()
-    {
-        $users = User::with('user_role.role')
-            ->where('email', '!=', 'monir.uddincloudone@gmail.com')
-            ->get();
-
-        // Modify user data with role information before returning
-        $users->each(function ($user) {
-            if ($user->user_role) {
-                $user->role = $user->user_role->role->role; // Access role name
-            } else {
-                $user->role = ''; // Set default value if no role assigned
+            // DataTables expects specific JSON response structure
+            $data = [];
+            foreach ($queries as $query) {
+                $data[] = [
+                    'id' => $query->id,
+                    'credential_for' => $query->credential_for,
+                    'email' => $query->email, // Access user email through relationship
+                    'mobile' => $query->mobile,
+                    'url' => $query->url,
+                    'ip_address' => $query->ip_address,
+                    'username' => $query->username,
+                    'password' => $query->password,
+                    // Add other columns as needed
+                ];
             }
-        });
 
-        return DataTables::of($users)->make(true);
+            return DataTables::of($data)->make(true);
+        } else {
+            return view('Permission denied');
+        }
     }
 
-    public function getAllMenuData()
+
+    public function getAllUserData(Request $request)
     {
-        $menu = Menu::all();
-        return DataTables::of($menu)->make(true);
+        $menuId = $request->input('menuId');
+
+        if ($this->checkPermissions($menuId)) {
+            $users = User::with('user_role.role')
+                ->where('email', '!=', 'monir.uddincloudone@gmail.com')
+                ->get();
+
+            // Modify user data with role information before returning
+            $users->each(function ($user) {
+                if ($user->user_role) {
+                    $user->role = $user->user_role->role->role; // Access role name
+                } else {
+                    $user->role = ''; // Set default value if no role assigned
+                }
+            });
+
+            return DataTables::of($users)->make(true);
+        } else {
+            return view('Permission denied');
+        }
     }
 
-    public function getAllRoleData()
+    public function getAllMenuData(Request $request)
     {
-        $roles = Role::all();
+        $menuId = $request->input('menuId');
 
-        return response()->json(['data' => $roles]);
+        if ($this->checkPermissions($menuId)) {
+            $menu = Menu::all();
+            return DataTables::of($menu)->make(true);
+        } else {
+            return view('Permission denied');
+        }
     }
 
-    public function getDynamicData()
+    public function getAllRoleData(Request $request)
     {
-        // Fetch data from the dynamic table
-        $data = CredentialForUser::all();
+        $menuId = $request->input('menuId');
 
-        return DataTables::of($data)
-            ->make(true);
+        if ($this->checkPermissions($menuId)) {
+            $roles = Role::all();
+
+            return response()->json(['data' => $roles]);
+        } else {
+            return view('Permission denied');
+        }
+    }
+
+    public function getDynamicData(Request $request)
+    {
+        $menuId = $request->input('menuId');
+
+        if ($this->checkPermissions($menuId)) {
+            // Fetch data from the dynamic table
+            $data = CredentialForUser::all();
+
+            return DataTables::of($data)
+                ->make(true);
+        } else {
+            return view('Permission denied');
+        }
     }
 
     public function getAllInformation()
@@ -177,17 +207,23 @@ class UserController extends Controller
     }
 
 
-    public function getAllPermission($id)
+    public function getAllPermission(Request $request, $id)
     {
-        // Find permissions associated with the given role ID and eager load the related menu data
-        $permissions = Permission::with('menu')->where('role_id', $id)->get();
+        $menuId = $request->input('menuId');
 
-        if ($permissions->isNotEmpty()) {
-            // If permissions are found, return them as JSON response
-            return response()->json(['data' => $permissions]);
+        if ($this->checkPermissions($menuId)) {
+            // Find permissions associated with the given role ID and eager load the related menu data
+            $permissions = Permission::with('menu')->where('role_id', $id)->get();
+
+            if ($permissions->isNotEmpty()) {
+                // If permissions are found, return them as JSON response
+                return response()->json(['data' => $permissions]);
+            } else {
+                // If no permissions are found, return a 404 error response
+                return response()->json(['error' => 'No permissions found for the given role ID'], 404);
+            }
         } else {
-            // If no permissions are found, return a 404 error response
-            return response()->json(['error' => 'No permissions found for the given role ID'], 404);
+            return view('Permission denied');
         }
     }
 
@@ -269,5 +305,17 @@ class UserController extends Controller
             }
         }
         return response()->json(['sidebarMenu' => $sidebarMenu]);
+    }
+
+    public function checkPermissions($menuId)
+    {
+        $userId = Auth::id();
+        $roleId = DB::table('user_role')->where('user_id', $userId)->value('role_id');
+
+        // Check if a permission exists for the role and the specified menu ID
+        return Permission::where('role_id', $roleId)
+            ->where('menu_id', $menuId)
+            ->where('read', 'yes')
+            ->exists();
     }
 }

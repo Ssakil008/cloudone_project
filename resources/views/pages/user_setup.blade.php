@@ -121,7 +121,7 @@
 <script src="assets/js/sidebar-menu.js"></script>
 <!-- Custom scripts -->
 <script src="assets/js/app-script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
+<script src="alertify/lib/alertify.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <!-- ColVis JavaScript file -->
 <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
@@ -353,6 +353,7 @@
         //     }
         // });
 
+        var menuId = '{{ $menuId }}';
         var editPermission = '{{ $editPermission }}';
         var deletePermission = '{{ $deletePermission }}';
         // Define DataTable columns dynamically based on permissions
@@ -402,7 +403,10 @@
             "serverSide": true,
             "ajax": {
                 "url": "{{ route('getAllUserData')}}",
-                "type": "GET"
+                "type": "POST",
+                "data": {
+                    menuId: menuId
+                }
             },
             "columns": columns,
             "dom": 'Bfrtip', // Custom dom structure with buttons

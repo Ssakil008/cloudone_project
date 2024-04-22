@@ -26,8 +26,10 @@
     <link href="assets/css/app-style.css" rel="stylesheet" />
     <!-- skins CSS-->
     <link href="assets/css/skins.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/alertify.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/themes/default.min.css" />
+
+    <link rel="stylesheet" href="alertify/themes/alertify.core.css" />
+    <link rel="stylesheet" href="alertify/themes/alertify.default.css" />
+
 </head>
 
 <body>
@@ -52,7 +54,7 @@
             </a>
 
             <!-- Search input field -->
-            <input type="text" id="searchInput" style="width: 90%; margin-left: 10px; padding: 5px; box-sizing: border-box;" placeholder="Search menu">
+            <input type="text" id="searchInput" style="width: 90%; margin-left: 20px; padding: 5px; border-radius: 5px;" placeholder="Search menu">
             <ul class="sidebar-menu" id="sidebarMenu">
                 <li>
                     <!-- <a href="javaScript:void();" class="waves-effect"> -->

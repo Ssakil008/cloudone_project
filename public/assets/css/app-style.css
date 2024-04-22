@@ -82,7 +82,7 @@ html {
 }
 
 body {
-    background-color: #f8f7ff;
+    /* background-color: #f8f7ff; */
     font-family: "Roboto", sans-serif;
     font-size: 12px;
     color: #757575;
@@ -777,7 +777,7 @@ small {
 
 .logo-icon {
     width: 35px;
-    margin-right: 5px;
+    margin: 0px 0px 10px 10px;
 }
 
 .user-details {

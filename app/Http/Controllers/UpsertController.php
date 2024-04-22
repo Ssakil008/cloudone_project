@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
@@ -254,15 +255,25 @@ class UpsertController extends Controller
                 'create' => 'nullable|string',
                 'edit' => 'nullable|string',
                 'delete' => 'nullable|string',
+                'permissionId' => 'nullable|integer', // Add validation for permissionId
             ]);
 
             $validator->after(function ($validator) use ($request) {
                 $roleId = $request->input('role_id');
                 $menuId = $request->input('menu');
+                $permissionId = $request->input('permissionId');
 
-                if (Permission::where('role_id', $roleId)->where('menu_id', $menuId)->exists()) {
-                    $validator->errors()->add('role_id', 'The menu for the role already exists.');
+                // Build the unique rule with the ignore parameter if permissionId exists
+                $uniqueRule = Rule::unique('permissions')->where(function ($query) use ($roleId, $menuId) {
+                    $query->where('role_id', $roleId)->where('menu_id', $menuId);
+                });
+
+                if ($permissionId) {
+                    $uniqueRule->ignore($permissionId);
                 }
+
+                // Apply the unique rule to check composite uniqueness
+                $validator->addRules(['role_id' => $uniqueRule]);
             });
 
             if ($validator->fails()) {

@@ -144,7 +144,7 @@
                     </div>
                     <div class="d-flex justify-content-start align-items-center">
                         <div class="form-check mr-3">
-                            <input type="checkbox" class="form-check-input" id="readCheckbox" name="read" checked disabled>
+                            <input type="checkbox" class="form-check-input" id="readCheckbox" name="read">
                             <label class="form-check-label" for="readCheckbox">Read</label>
                         </div>
                         <div class="form-check mr-3">
@@ -181,7 +181,7 @@
 <script src="assets/js/sidebar-menu.js"></script>
 <!-- Custom scripts -->
 <script src="assets/js/app-script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
+<script src="alertify/lib/alertify.min.js"></script>
 
 <script>
     $(document).ready(function() {
@@ -342,12 +342,16 @@
 
     $(document).ready(function() {
         // Fetch roles data from the server
+        var menuId = '{{ $menuId }}';
         var editPermission = '{{ $editPermission }}';
         var deletePermission = '{{ $deletePermission }}';
 
         $.ajax({
-            type: 'GET',
             url: '{{ route("getAllRoleData") }}',
+            type: 'POST',
+            data: {
+                menuId: menuId
+            },
             success: function(response) {
                 // Check if the response has the 'data' property
                 if (response.hasOwnProperty('data')) {
@@ -469,6 +473,7 @@
 
 
     $(document).ready(function() {
+        var menuId = '{{ $menuId }}';
         var roleId = null;
         var editPermission = '{{ $editPermission }}';
         var deletePermission = '{{ $deletePermission }}';
@@ -490,8 +495,11 @@
 
             // Fetch data for the permission table based on roleId using AJAX
             $.ajax({
-                type: 'GET',
                 url: '{{ route("getAllPermission", ["id" => ":id"]) }}'.replace(':id', roleId),
+                type: 'POST',
+                data: {
+                    menuId: menuId
+                },
                 success: function(response) {
                     // Check if the response has the 'data' property
                     if (response.hasOwnProperty('data')) {
@@ -547,43 +555,55 @@
             $('#permissionForm').submit(function(e) {
                 e.preventDefault(); // Prevent form submission
 
-                // Prepare form data including role_id
-                var formData = {
-                    permissionId: $('#permissionId').val(),
-                    role_id: $('#role_id').val(),
-                    menu: $('#menu').val(),
-                    read: $('#readCheckbox').is(':checked') ? 'yes' : 'no',
-                    create: $('#createCheckbox').is(':checked') ? 'yes' : 'no',
-                    edit: $('#editCheckbox').is(':checked') ? 'yes' : 'no',
-                    delete: $('#deleteCheckbox').is(':checked') ? 'yes' : 'no'
-                };
+                // Check if at least one permission checkbox is checked
+                if (!$('#readCheckbox').is(':checked') &&
+                    !$('#createCheckbox').is(':checked') &&
+                    !$('#editCheckbox').is(':checked') &&
+                    !$('#deleteCheckbox').is(':checked')) {
+                    // Display error message and return
+                    alertify.alert("Please select at least one permission.");
+                } else {
 
-                // Send AJAX request
-                $.ajax({
-                    type: 'POST',
-                    url: '{{ route("insertPermission") }}',
-                    data: formData,
-                    success: function(response) {
-                        if (response.success) {
+                    // Prepare form data including role_id
+                    var formData = {
+                        permissionId: $('#permissionId').val(),
+                        role_id: $('#role_id').val(),
+                        menu: $('#menu').val(),
+                        read: $('#readCheckbox').is(':checked') ? 'yes' : 'no',
+                        create: $('#createCheckbox').is(':checked') ? 'yes' : 'no',
+                        edit: $('#editCheckbox').is(':checked') ? 'yes' : 'no',
+                        delete: $('#deleteCheckbox').is(':checked') ? 'yes' : 'no'
+                    };
+
+                    console.log(formData);
+
+                    // Send AJAX request
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ route("insertPermission") }}',
+                        data: formData,
+                        success: function(response) {
+                            if (response.success) {
+                                $('#permissionModal').modal('hide');
+                                $('#successmessage').text(response.message);
+                                $('#successmodal').modal('show');
+                                setTimeout(function() {
+                                    $('#successmodal').modal('hide');
+                                    window.location.replace('{{ route("role") }}');
+                                }, 2000);
+                            } else {
+                                $('#permissionModal').modal('hide');
+                                showErrorModal([response.errors]);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX error:', error);
                             $('#permissionModal').modal('hide');
-                            $('#successmessage').text(response.message);
-                            $('#successmodal').modal('show');
-                            setTimeout(function() {
-                                $('#successmodal').modal('hide');
-                                window.location.replace('{{ route("role") }}');
-                            }, 2000);
-                        } else {
-                            $('#permissionModal').modal('hide');
-                            showErrorModal([response.errors]);
+                            var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
+                            showErrorModal([errorMessage]);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX error:', error);
-                        $('#permissionModal').modal('hide');
-                        var errorMessage = "An error occurred: " + xhr.status + " " + xhr.statusText;
-                        showErrorModal([errorMessage]);
-                    }
-                });
+                    });
+                }
             });
         });
 

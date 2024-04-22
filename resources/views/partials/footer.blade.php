@@ -42,6 +42,12 @@
         return regex.test(email);
     }
 
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
     $(document).ready(function() {
 
         function filterMenuItems() {
@@ -60,12 +66,6 @@
 
         // Event listener for search input
         document.getElementById('searchInput').addEventListener('input', filterMenuItems);
-
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
 
         // Make an AJAX call to fetch the sidebar menu
         $.ajax({
