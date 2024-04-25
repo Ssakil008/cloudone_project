@@ -49,12 +49,11 @@
         <!--Start sidebar-wrapper-->
         <div id="sidebar-wrapper" data-simplebar="" data-simplebar-auto-hide="true">
             <a href="dashboard" style="margin-left: 10px;">
-                <img src="assets/images/logo-icon.png" class="logo-icon" alt="logo icon">
-                <h5 class="logo-text">Bulona Admin</h5>
+                <img src="assets/images/TechVault.png" class="logo-icon" alt="logo icon">
             </a>
 
             <!-- Search input field -->
-            <input type="text" id="searchInput" style="width: 90%; margin-left: 20px; padding: 5px; border-radius: 5px;" placeholder="Search menu">
+            <input type="text" id="searchInput" style="width: 90%; margin-left: 10px; padding: 5px; border-radius: 5px;" placeholder="Search menu">
             <ul class="sidebar-menu" id="sidebarMenu">
                 <li>
                     <!-- <a href="javaScript:void();" class="waves-effect"> -->
