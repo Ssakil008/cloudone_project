@@ -9,9 +9,9 @@
     <meta name="author" content="" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title','Bulona - Bootstrap Admin Dashboard Template')</title>
+    <title>@yield('title','Tech Vault')</title>
     <!--favicon-->
-    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="assets/images/TechVaultFavicon.ico" type="image/x-icon">
     <!-- simplebar CSS-->
     <link href="assets/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
     <!-- Bootstrap core CSS-->
