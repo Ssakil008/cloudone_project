@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- Mirrored from codervent.com/bulona/demo/authentication-signup.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 26 Feb 2020 10:09:20 GMT -->
-
 <head>
    <meta charset="utf-8" />
    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -11,9 +9,9 @@
    <meta name="author" content="" />
    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-   <title>Bulona - Bootstrap Admin Dashboard Template</title>
+   <title>Tech Vault</title>
    <!--favicon-->
-   <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+   <link rel="icon" href="assets/images/TechVaultFavicon.ico" type="image/x-icon">
    <!-- Bootstrap core CSS-->
    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
    <!-- animate CSS-->
@@ -47,7 +45,7 @@
          <div class="card-body">
             <div class="card-content p-2">
                <div class="text-center">
-                  <img src="assets/images/logo-icon.png" alt="logo icon">
+                  <img src="assets/images/TechVaultFavicon.png" alt="logo icon">
                </div>
                <div class="card-title text-uppercase text-center py-3">Sign Up</div>
                <form class="register_form" id="register_form">
@@ -321,7 +319,5 @@
    </script>
 
 </body>
-
-<!-- Mirrored from codervent.com/bulona/demo/authentication-signup.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 26 Feb 2020 10:09:20 GMT -->
 
 </html>
